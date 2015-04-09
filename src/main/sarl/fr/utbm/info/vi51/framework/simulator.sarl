@@ -1,0 +1,84 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2014-15 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.vi51.framework
+
+import fr.utbm.info.vi51.framework.environment.DynamicType
+import fr.utbm.info.vi51.framework.environment.Environment
+import fr.utbm.info.vi51.framework.environment.EnvironmentAgent
+import fr.utbm.info.vi51.framework.environment.SimulationAgentReady
+import fr.utbm.info.vi51.framework.environment.StartSimulation
+import fr.utbm.info.vi51.framework.util.SpawnMapping
+import io.sarl.core.DefaultContextInteractions
+import io.sarl.core.Initialize
+import io.sarl.core.Lifecycle
+import io.sarl.util.OpenEventSpaceSpecification
+import java.util.UUID
+import java.util.List
+
+/** This agent is managing the simulator. 
+ *
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ */
+agent SimulatorAgent {
+	
+	uses DefaultContextInteractions, Lifecycle
+
+	var waitingAgents = 0
+
+	on Initialize {
+		var environment = (occurrence.parameters.get(0) as Environment)
+		var spaceId = (occurrence.parameters.get(1) as UUID)
+		var spawnMapping = (occurrence.parameters.get(2) as SpawnMapping)
+		var behaviorType = (occurrence.parameters.get(3) as DynamicType)
+				
+		defaultContext.getOrCreateSpaceWithID(spaceId, OpenEventSpaceSpecification)
+
+		waitingAgents = environment.agentBodies.size + 1 
+
+		var environmentId = spawn(typeof(EnvironmentAgent), environment, spaceId)
+		
+		var agentParameters : List<Object> = newArrayList(spaceId, environmentId, behaviorType)
+		for(var i = 4; i < occurrence.parameters.size; i++) {
+			agentParameters += occurrence.parameters.get(i)
+		}
+
+		for(body : environment.agentBodies) {
+			var agentType = spawnMapping.getAgentTypeForBody(body)
+			spawnInContextWithID(
+				agentType,
+				body.ID,
+				defaultContext,
+				agentParameters.toArray)
+		}
+		
+	}
+	
+	on SimulationAgentReady [!occurrence.fromMe] {
+		synchronized(this) {
+			waitingAgents --
+			if (waitingAgents <= 0) {
+				emit(new StartSimulation)
+				killMe
+			}
+		}
+	}
+	
+}
