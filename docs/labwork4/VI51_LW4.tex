@@ -1,0 +1,108 @@
+%----------------------------------------
+% IT IS RECOMMENDED TO USE AUTOLATEX FOR
+% COMPILING THIS DOCUMENT.
+% http://www.arakhne.org/autolatex
+%----------------------------------------
+
+\documentclass[article,english,nodocumentinfo]{multiagentfrreport}
+
+% The TeX code is entering with UTF8
+% character encoding (Linux and MacOS standards)
+\usepackage[utf8]{inputenc}
+\usepackage{fancyhdr}
+\usepackage{../common/sarl-listing}
+
+\graphicspath{{imgs/auto/},{imgs/},{../common/}}
+
+\declaredocument{VI51 Lab Work \#4}{Environment Model}{UTBM-INFO-VI51-LW4}
+
+\addauthorvalidator*[St\'ephane Galland]{St{\'e}phane}{Galland}{Teacher}
+
+\updateversion{5.0}{\makedate{03}{05}{2015}}{First release on Github}{\upmpublic}
+
+\Set{mafr_contact_name}{\phdname*{St\'ephane}{Galland}}
+\Set{mafr_contact_email}{stephane.galland@utbm.fr}
+\Set[french]{mafr_contact_phone}{03~84~58~34~18}
+\Set[english]{mafr_contact_phone}{+33 384~583~418}
+
+\gdef\skeletonName{\texttt{\mbox{LW4\_VI51\_skeleton\string.jar}}}
+
+\begin{document}
+
+\section{Goal of this Lab Work Session}
+
+The goal of this lab work session is to write the internal data structure for storing the objects in the environment model.
+Since the considered environment is continuous, the data structure to implement is a spatial tree (usually a quadtree).
+
+You shall learn: 
+\begin{itemize}
+\item How to write a quadtree.
+\item How to use the quadtree in the environment model.
+\item How to write the perception algorithm based on the quadtree.
+\end{itemize}
+
+\input{../common/install}
+
+\section{Brief Description of the Code Skeleton}
+
+The skeleton contains a framework in the package \texttt{fr.utbm.info.vi51.framework}.
+This framework contains the abstract implementation for the execution platform.
+\emph{It is recommended to read this code and the associated Javadoc.}
+
+The package \texttt{fr.utbm.info.vi51.labwork2} contains the code to complete during this lab work.
+
+The subpackages are or will be:
+\begin{itemize}
+\item \texttt{fr.utbm.info.vi51.general.behavior} is the package that contains the movement behaviors (kinematic and/or steering).
+\item \texttt{fr.utbm.info.vi51.general.tree} is the package in which you must create the spatial tree implementation.
+\item \texttt{fr.utbm.info.vi51.general.frustum} is the package in which you must create the field-of-view implementation.
+\item \texttt{fr.utbm.info.vi51.labwork4.environment} contains the definition of the environment and the objects inside that are specific to the lab work.
+\item \texttt{fr.utbm.info.vi51.labwork4.gui} contains the UI for the project.
+\item \texttt{fr.utbm.info.vi51.labwork4.agent} contains the code of the agent to complete.
+\item The file \texttt{fr/utbm/info/vi51/labwork3/MainProgram.java} contains the main program.
+\end{itemize}
+
+\section{Work to be Done during the Lab Work Session}
+
+The following sections describe the work to be done during this lab work session.
+
+\subsection{Quadtree Implementation}
+
+You must implement a data structure able to store the objects in the environment model: quadtree.
+A quadtree is a spatial tree in which each node represents a part of the area, and that could be divided into four sub-area of the same size (that are then child nodes in the spatial tree).
+Figure \figref{classdiagram} provides you the UML class diagram of the classes that support the quadtree. On this figure, the classes with a grey background are provided in the code skeleton.
+
+\mfigure[p]{width=\linewidth}{classdiagram}{Class diagram for the quadtree and the frustum}{classdiagram}
+
+You should:
+\begin{enumerate}[a)]
+\item create the class \texttt{QuadTreeNode}.
+\item create the class \texttt{QuadTree}.
+\end{enumerate}
+
+\subsection{Fustrum Implementation}
+
+One of the major missions of the environment is to compute the perception for the agents.
+This computation is based on the field-of-view of each agent, aka. the frustum of the agents.
+The abstract implementation for the frustum is provided.
+
+You shall code the a circular frustum in the class \texttt{CircleFrustum}.
+
+\subsection{Frustum Culling}
+
+The frustum culling is the algorithm that permits to extraxct from the quadtree the objects that are in the field-of-view of a specific agent.
+This algorithm is based on the iteration design pattern.
+Consequently,, you shall code an iterator that:
+\begin{itemize}
+\item has two inputs: the root node, the shape of the field-of-view.
+\item has an output: the objects in the field of view, replied in turn (according to the iteration design pattern).
+\item iterates in the quadtree nodes that are intersecting the field of view.
+\end{itemize}
+
+\subsection{Perception Algorithm}
+
+The computation of the perception for a specific agent is coded into the function \code{computePerceptionsFor(agent : AgentBody)} of the class \texttt{WorldModel}.
+
+You shall code this function by using the iterator on the quadtree that was coded for the previous questions.
+
+\end{document}

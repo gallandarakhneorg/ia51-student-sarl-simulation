@@ -1,0 +1,66 @@
+\NeedsTeXFormat{LaTeX2e}[1995/12/01]
+\ProvidesPackage{sarl-listing}[2014/10/05]
+
+\RequirePackage{algpseudocode}
+\RequirePackage{listings}
+\RequirePackage{xcolor}
+
+
+\definecolor{SARLblue}{RGB}{43,88,121}
+\definecolor{SARLlightblue}{RGB}{0,123,191}
+\definecolor{SARLlightestblue}{RGB}{223,239,247}
+
+\definecolor{SARLmagenta}{RGB}{153,30,102}
+\definecolor{SARLlightmagenta}{RGB}{204,122,170}
+\definecolor{SARLlightestmagenta}{RGB}{250,240,246}
+
+\definecolor{SARLgreen}{RGB}{0,128,0}
+
+\definecolor{SARLdarkgray}{RGB}{99,104,110}
+
+
+\colorlet{SARLcomment}{SARLgreen}
+\colorlet{SARLstring}{SARLmagenta}
+\colorlet{SARLkeyword}{SARLblue}
+
+
+\lstdefinelanguage{SARL}
+{
+morekeywords={auto,break,case,char,continue,default,do,double,%
+else,enum,extern,float,for,goto,if,int,long,register,return,integer,%
+short,signed,sizeof,static,switch,typedef,union,unsigned,from,to%
+void,volatile,while,done,end,then,begin,repeat,until,%
+and, function, procedure, void, agent, on, behavior, skill,%
+extends, implements, instanceof, true, false, as, null,private,%
+occurrence, capacity, event, def, import, var, val, uses, requires, new, this, package,
+class, interface, space},
+frameround=fttt
+}
+
+
+\lstset{
+  basicstyle=\tt\scriptsize,% print whole listing small
+  keywordstyle=\color{SARLblue}\bfseries,% bold black keywords
+  identifierstyle=,% nothing happens
+  commentstyle=\color{SARLmagenta}\tiny\bfseries\scshape,% white comments
+  stringstyle=\ttfamily,% typewriter type for strings
+  showstringspaces=false,% no special string spaces
+  mathescape=true,%
+  breaklines=true,%
+  frame=leftline, %
+  tabsize=2, 
+  numbers=left, %
+  numberstyle=\tiny, %
+  %backgroundcolor=\color{hellgelb}, %
+  language=SARL,%
+  texcl=true,%
+  escapeinside={(*@}{@*)},
+  captionpos=b,
+  xleftmargin=5.0ex,
+%   abovecaptionskip=\medskipamount,
+  morecomment=[s][\upshape\color{SARLmagenta}\tiny\bfseries\scshape]{/*}{*/},
+}
+
+\newcommand{\code}[2][\normalsize]{\lstinline[language=SARL,basicstyle=#1]{#2}}
+
+\endinput

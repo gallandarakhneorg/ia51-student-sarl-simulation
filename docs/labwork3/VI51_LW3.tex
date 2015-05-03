@@ -1,0 +1,148 @@
+%----------------------------------------
+% IT IS RECOMMENDED TO USE AUTOLATEX FOR
+% COMPILING THIS DOCUMENT.
+% http://www.arakhne.org/autolatex
+%----------------------------------------
+
+\documentclass[article,english,nodocumentinfo]{multiagentfrreport}
+
+% The TeX code is entering with UTF8
+% character encoding (Linux and MacOS standards)
+\usepackage[utf8]{inputenc}
+\usepackage{fancyhdr}
+\usepackage{../common/sarl-listing}
+
+\graphicspath{{imgs/auto/},{imgs/},{../common/}}
+
+\declaredocument{VI51 Lab Work \#3}{Coordinated Movement Algorithms}{UTBM-INFO-VI51-LW3}
+
+\addauthorvalidator*[St\'ephane Galland]{St{\'e}phane}{Galland}{Teacher}
+
+\updateversion{5.0}{\makedate{03}{05}{2015}}{First release on Github}{\upmpublic}
+
+\Set{mafr_contact_name}{\phdname*{St\'ephane}{Galland}}
+\Set{mafr_contact_email}{stephane.galland@utbm.fr}
+\Set[french]{mafr_contact_phone}{03~84~58~34~18}
+\Set[english]{mafr_contact_phone}{+33 384~583~418}
+
+\gdef\skeletonName{\texttt{\mbox{LW3\_VI51\_skeleton\string.jar}}}
+
+\begin{document}
+
+\section{Goal of this Lab Work Session}
+
+The goal of this lab work session is to write a simulator in which agents are able to move in a coordinated way.
+The work should be done in the programming languages SARL (\url{http://www.sarl.io}) and Java.
+You shall use code skeleton provided by the tearchers with the simulation framework already coded inside.
+
+You shall learn: 
+\begin{itemize}
+\item How to write a general API for the formation patterns.
+\item How to write one or more specific formation patterns.
+\item How to put a formation pattern in the knowledge of the agents.
+\item How to use the formation pattern for determining the targets of the movements of the agents. 
+\end{itemize}
+
+\input{../common/install}
+
+\section{Brief Description of the Code Skeleton}
+
+The skeleton contains a framework in the package \texttt{fr.utbm.info.vi51.framework}.
+This framework contains the abstract implementation for the execution platform.
+\emph{It is recommended to read this code and the associated Javadoc.}
+
+The package \texttt{fr.utbm.info.vi51.labwork2} contains the code to complete during this lab work.
+
+The subpackages are or will be:
+\begin{itemize}
+\item \texttt{fr.utbm.info.vi51.general.behavior} is the package that contains the movement behaviors (kinematic and/or steering).
+\item \texttt{fr.utbm.info.vi51.general.formation} is the package in which you must create the formation patterns.
+\item \texttt{fr.utbm.info.vi51.labwork3.environment} contains the definition of the environment and the objects inside that are specific to the lab work.
+\item \texttt{fr.utbm.info.vi51.labwork3.gui} contains the UI for the project.
+\item \texttt{fr.utbm.info.vi51.labwork3.agent} contains the code of the agent to complete.
+\item The file \texttt{fr/utbm/info/vi51/labwork3/MainProgram.java} contains the main program.
+\end{itemize}
+
+\section{Work to be Done during the Lab Work Session}
+
+The following sections describe the work to be done during this lab work session.
+
+\subsection{API for the Formation Patterns}
+
+You must implement a data structure able to represent a formation: the formation pattern.
+Figure \figref{classdiagram} provides you the UML class diagram of the formation pattern API.
+
+\mfigure[p]{width=\linewidth}{classdiagram}{Class diagram of the formation pattern API}{classdiagram}
+
+You should:
+\begin{enumerate}[a)]
+\item create the abstract class \texttt{FormationSlot}, representing a position in the formation pattern. This position could be for the leader or for the following agents.
+\item create the concrete classes for the leader and follower slots: \texttt{LeaderFormationSlot} and \texttt{FollowerFormationSlot}.
+\item create the abstract class \texttt{FormationPattern}, representing the global pattern of the formation.
+\end{enumerate}
+
+\subsection{Body Guard Formation Pattern}
+
+You must create a specific implementation of a formation pattern: the body guard formation.
+In this pattern, the leader is at the center of formation.
+The following agents are the body guards: they are located on circle centered on the leader of the formation, and they see outside the formation (see Figure \figref{bodyguardpattern}, page \figpageref{bodyguardpattern}).
+The definition of the formation pattern must be coded into the function \texttt{scale(int)}, where the parameter is the number of slots in the pattern (including the leader slot).
+
+\mfigure[p]{width=.6\linewidth}{bodyguardpattern}{The body guard formation pattern}{bodyguardpattern}
+
+\begin{upmcaution}
+\Emph{Caution:} It is important to have a clear distinction between the concepts of ``formation slot'', ``agent'', and ``agent body''. \newline\newline
+The ``agent'' is the artificial intelligence which is exhibiting a behavior. It is intelligent and autonomous. \newline\newline
+The ``agent body'' is the representation of the agent on the physic world. It is not intelligent nor autonomous. \newline\newline
+The ``formation slot'' is a representation of a position in a formation pattern. It is not an agent nor an agent body.
+\end{upmcaution}
+
+\subsection{Leader Behavior}
+
+Assuming that the code skeleton puts the formation pattern into the knowledge of the leader agent, write the behavior of the leader agent.
+The leader agent is running randomly on the ground, and controls the formation pattern.
+Figure \figref{bodyguardagents} on page \figpageref{bodyguardagents} provides an example of relationship between the leader body and the body guard formation pattern.
+
+\mfigure[p]{width=.5\linewidth}{bodyguardagents}{The agent bodies related to the body guard formation pattern}{bodyguardagents}
+
+You shall:
+\begin{enumerate}[a)]
+\item use the movement behaviors in the SARL leader agent, in \code{on PerceptionEvent}.
+\item update the previous event handler for updating the position and orientation of the formation pattern.
+\end{enumerate}
+
+\subsection{Slot Assignment Policy}
+
+Since the number of slots and the number of agents may not match, it is important to define a policy for assigning the slots to the agents.
+This policy should be coded into the class \texttt{FormationAssignment}.
+An instance of this class is provided to each following agent for obtaining a slot.
+
+The following SARL code provides you an example of the ``FIFO'' assignment of the slots:
+\begin{lstlisting}
+class FormationAssignment {
+  private var nextFreeSlotIndex = 1
+  def allocate(isTheCallerTheLeader : boolean) {
+    var index = nextFreeSlotIndex
+    nextFreeSlotIndex ++
+    return index
+  }
+}
+\end{lstlisting}
+
+The function \code{allocate()} is invoked by the following agents for obtaining the index of the slot that should be used.
+
+You shall code this class.
+
+\subsection{Follower Behavior}
+
+Assuming that the code skeleton puts the formation pattern into the knowledge of the follower agent, write the behavior of the following agent.
+The following agent is seeking the position of the assigned slot in the formation, and aligning to the slot's orientation.
+Figure \figref{bodyguardagents} on page \figpageref{bodyguardagents} provides an example of relationship between the follower bodies and the body guard formation pattern.
+
+You shall:
+\begin{enumerate}[a)]
+\item write the code for retreiving the position and orientation of the formation's slot in the SARL follower agent.
+\item implement the movement behaviour of the SARL follower agent.
+\end{enumerate}
+
+\end{document}
