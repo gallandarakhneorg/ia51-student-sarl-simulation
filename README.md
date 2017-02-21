@@ -1,7 +1,8 @@
-# Lecture: VI51 - Virtual Life Simulation
+# Lecture: IA51 - Artificial Intelligence for Games and Virtual Environments
 
 This lecture aims to provide the bakcground for creating agent-oriented simulators for the modeling and
-the simulation of mobility behavior in virtual environments.
+the simulation of mobility behavior in games or virtual environments.
+This lecture was known as VI51, Virtual Life for Games and Serious Games.
 
 This repository contains the source code that is used by the students during the lab works associated to the lecture.
 
