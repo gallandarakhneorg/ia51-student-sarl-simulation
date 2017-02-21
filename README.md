@@ -11,19 +11,17 @@ License: Apache License 2
 
 ## Content of this repository
  
-* `src/main/java/fr/utbm/info/vi51/framework` contains a very simple simulation framework (following the guidelines given during the seminar sessions) based on the [SARL agent-oriented language](http://www.sarl.io) and the [Janus platform](http://www.janusproject.io).
-* `src/main/java/fr/utbm/info/vi51/general` contains the different general libraries that are coded by the students during the lab works.
-* `src/main/java/fr/utbm/info/vi51/labworkX` contains the complete source code for a specific lab work.
+* `src/main/java/fr/utbm/info/ia51/framework` contains a very simple simulation framework (following the guidelines given during the seminar sessions) based on the [SARL agent-oriented language](http://www.sarl.io) and the [Janus platform](http://www.janusproject.io).
+* `src/main/java/fr/utbm/info/ia51/general` contains the different general libraries that are coded by the students during the lab works.
+* `src/main/java/fr/utbm/info/ia51/labworkX` contains the complete source code for a specific lab work.
 
 ## Installation
 
-* Download the [version 2.0.3.0](http://www.janusproject.io/#download) (or higher) of the Janus platform.
-* Download the [Eclipse product 0.3.0](http://www.sarl.io/download/) (or higher) for the SARL agent programming language.
-* CAUTION: The digits 2 and 3 of the Janus platform version must be the same as the digits 1 and 2 of the Eclipse product, here "0.3".
+* Download the [SARL Eclipse product 0.5.0](http://www.sarl.io/download/) (or higher) for the SARL agent programming language.
 * Launch the SARL Eclipse product.
 * Create a SARL project.
 * In the buildpath of the project: remove the "SARL libraries".
-* In the buildpath of the project: add the external Jar of the Janus platform.
+* In the buildpath of the project: add the "Janus Libraries".
 * Copy the source code from this repository in the project.
 
 ## Launching
