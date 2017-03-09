@@ -14,7 +14,7 @@
 
 \graphicspath{{imgs/auto/},{imgs/},{../common/}}
 
-\declaredocument{VI51 Lab Work \#5}{Q-Learning}{UTBM-INFO-VI51-LW5}
+\declaredocument{VI51 Lab Work \#5}{Boids and Ants}{UTBM-INFO-VI51-LW5}
 
 \addauthorvalidator*[St\'ephane Galland]{St{\'e}phane}{Galland}{Teacher}
 
@@ -31,11 +31,13 @@
 
 \section{Goal of this Lab Work Session}
 
-The goal of this lab work session is to write configure the provided Q-Learning algorithm for eanbling predators to catch a prey.
+The goal of this lab work session is to write the behaviors of boids, and ants.
 
 You shall learn: 
 \begin{itemize}
-\item How to confiure a Q-Learning algorithm.
+\item the boids behavior.
+\item the ant behavior.
+\item the environment model for a ant colony simulation.
 \end{itemize}
 
 \input{../common/install}
@@ -46,121 +48,61 @@ The skeleton contains a framework in the package \texttt{fr.utbm.info.vi51.frame
 This framework contains the abstract implementation for the execution platform.
 \emph{It is recommended to read this code and the associated Javadoc.}
 
-The package \texttt{fr.utbm.info.vi51.labwork2} contains the code to complete during this lab work.
+The package \texttt{fr.utbm.info.vi51.labwork5} contains the code to complete during this lab work.
 
 The subpackages are or will be:
 \begin{itemize}
-\item \texttt{fr.utbm.info.vi51.general.behavior} is the package that contains the movement behaviors (kinematic and/or steering).
-\item \texttt{fr.utbm.info.vi51.general.qlearning} is the package in which the Q-Learning algorithm is implemented.
-\item \texttt{fr.utbm.info.vi51.labwork5.environment} contains the definition of the environment and the objects inside that are specific to the lab work.
-\item \texttt{fr.utbm.info.vi51.labwork5.gui} contains the UI for the project.
-\item \texttt{fr.utbm.info.vi51.labwork5.agent} contains the code of the agent to complete.
-\item The file \texttt{fr/utbm/info/vi51/labwork5/MainProgram.java} contains the main program.
+\item \texttt{fr.utbm.info.vi51.motionbehavior} is the package that contains the movement behaviors (kinematic and/or steering).
+\item \texttt{fr.utbm.info.vi51.labwork4.environment} contains the definition of the environment and the objects inside that are specific to the lab work.
+\item \texttt{fr.utbm.info.vi51.labwork4.gui} contains the UI for the project.
+\item \texttt{fr.utbm.info.vi51.labwork4.agent} contains the code of the agent to complete.
+\item The file \texttt{fr/utbm/info/vi51/labwork4/MainProgram.java} contains the main program.
 \end{itemize}
-
-\section{Principle of the Q-Learning}
-
-Q-learning is a model-free reinforcement learning technique.
-Specifically, Q-learning can be used to find an optimal action-selection policy for any given (finite) Markov decision process (MDP).
-It works by learning an action-value function that ultimately gives the expected utility of taking a given action in a given state and following the optimal policy thereafter.
-A policy is a rule that the agent follows in selecting actions, given the state it is in.
-When such an action-value function is learned, the optimal policy can be constructed by simply selecting the action with the highest value in each state.
-One of the strengths of Q-learning is that it is able to compare the expected utility of the available actions without requiring a model of the environment.
-Additionally, Q-learning can handle problems with stochastic transitions and rewards, without requiring any adaptations.
-
-The Q-learning algorithm is based on a graph of the states of the system.
-An action permits to change the state.
-Each time an action is selected, a feedback must be computed. This feedback determines if the action is ``good'' or ``bad''. This feedback is used for updating the Q-value of the (state, action) pair. The Q-value represents the interest for the action to be selected when the agent is in the given state. 
-
-The provided Q-Learning algorithm needs to define several functions that are used as inputs.
-They are defined below.
 
 \section{Work to be Done during the Lab Work Session}
 
 The following sections describe the work to be done during this lab work session.
 
-The considered problem is: a carrot is moving on the environment (controled by the mouse) and predactors (agents) should learn to capture the carrot.
+\subsection{Boid Behavior}
 
-\subsection{Predator Actions}
+You must implement the behavior of a boid.
 
-First, you must define the types of actions that the predactors could do.
-The following actions could be considered
-\begin{lstlisting}
-enum PredatorActionType {
-   /** Move randomly. */
-   RANDOM_MOVE,
-   /** Move straight forward to the carrot. */
-   MOVE_TO_KILL_THE_PREY,
-   /** Move on the left side of the carrot. */
-   MOVE_LEFT,
-   /** Move on the right side of the carrot. */
-   MOVE_RIGHT,
-   /** Do nothing. */
-   WAIT
-}
-\end{lstlisting}
+You should:
+\begin{enumerate}[a)]
+\item read the class \texttt{WorldModel} for understanding the types of objects that will be included in the agents' perceptions.
+\item Write the behavior in \texttt{Fish} agent, for reproducing a Boid.
+\end{enumerate}
 
-Each action must be related to the Q-Learning algorithm.
-You must defined a subclass of \code{QAction} that permits to describe the different types of actions.
+\subsection{Environment Model for Ant Colony}
 
-In this subclass of \code{QAction}, several functions must be defined:
-\begin{itemize}
-\item \code{def toInt : int} \\
-	replies the integer representation of the action.
-\item \code{def compareTo(obj : QComparable) : int} \\
-	replies the result of the comparison of the current action and the object given as parameter.
-\end{itemize}
+In this section, you must update the environment model for enabling the creation of pheromones in the environment, and their evaporation.
 
-\subsection{Defining the states to explore}
+You should:
+\begin{enumerate}[a)]
+\item Create the type of environment object \texttt{Pheromone}.
+\item Create the type of environment object \texttt{Food}.
+\item Create a data structure for containing the pheronomons in the \texttt{WorldModel} class.
+\item Update the \texttt{getAllObjects} function.
+\item Update the \texttt{computeEndogenousBehaviorInfluences} function for evaporating the pheromons.
+\item Update the \texttt{computePerceptionsFor} function for evaporating the pheromons.
+\item Update the \texttt{applyInfluences} function for evaporating the pheromons.
+\end{enumerate}
 
-The Q-learning algorithm works on a set of states.
-You should define a set of states for the predator problem.
-In other words, considering the state of the predactor body and of its perception, you should define the set of states that are needed for the learning process.
+\subsection{Ant Behavior}
 
-According to Q-learning approach, each state has a number.
-In the \code{PredatorProblem} class, change the number of states to consider in the definition of the foeld with the name \code{states}.
+In this section, you must create the behavior of a ant that is searching for food.
+You must use pheromone for returning to the colony, and/or returning to the food source.
 
-Note that the semantic of each state (eg. ``carrot is straight forward'') should not be coded in a graph. This semantic is hard-coded in the functions you will code later.
+You should:
+\begin{enumerate}[a)]
+\item Write the behavior in \texttt{Ant} agent, for reproducing an Ant.
+\end{enumerate}
 
-\subsection{Available actions from a state}
+\subsection{Main Program for Ant Simulation}
 
-It is needed to specify the actions that are available/activable from a specific state.
-
-You must code the function \code{def getAvailableActionsFor(state : DefaultQState) : List<PredatorAction>} in the \code{PredatorProblem} class.
-
-It is recommended to reply all the action for every state as a first version of this function.
-
-\subsection{Find the Q-state from perception}
-
-One important point in the Q-learning algorithm is to map the state of the simulated problem (the prey-predator problem) into a state in the Q-learning graph.
-
-In the \code{PredatorProblem} class, the function \code{def translateCurrentState(position : Point2f, percepts : List<Percept>)} permits to change the current state (stored as a field in the \code{PredatorProblem} class) according to the position of the agent body and its perception.
-
-\subsection{Computing the Feedback}
-
-The feedback is the result of the evaluation of the execution of an action in a specific state.
-You must code the \code{takeAction} function in the \code{PredatorProblem} class.
-
-This function takes two parameters:
-\begin{itemize}
-\item the state in which the action is applied, and
-\item the action to apply.
-\end{itemize}
-
-This function replies the result of the evaluation. Usually a negative score means a ``bad'' action, a positive score a ``good'' action, and a zero score an action that has no particular effect.
-
-\subsection{Specifying the Algorithm Parameters}
-
-Several parameters are used by the Q-Learning algorithm for controlling its behavior:
-\begin{itemize}
-\item $\alpha \in [0;1]$: The learning rate controls how must influence the current feedback value has over the stored Q-value. A value of zero means no-learning. A value of one would give no credence to any previous
-experience.
-\item $\gamma \in [0;1]$: The discount rate controls how must an action's Q-value depends on the Q-value at the state it leads to. A value of zero means what only the reward is taken into account, ie. no learning on sequences of actions A value of one would rate the reward for the current action as equally important as the quality of the state it leads to.
-\item $\rho \in [0;1]$: The randomness for exploration controls how often the algorithm will take a random action, rather than the best it knows so far. A value of zero gives pure exploitation strategy: only the best
-action is selected. A value of one gives pure exploration strategy: the algorithm will always try new things.
-\item $\nu \in [0;1]$: The Length of walk controls the number of iterations that will be carried out in a sequence of connected actions. A zero value would mean the algorithm always uses the state it reached in the previous iteration as the starting state for the next iteration. A value of one would mean that every iteration starts from a random state.
-\end{itemize}
-
-You could change the values of these parameters (in the corresponding functions in the \code{PredatorProblem} class.
+You should:
+\begin{enumerate}[a)]
+\item Update the function \texttt{main} for launching ants.
+\end{enumerate}
 
 \end{document}

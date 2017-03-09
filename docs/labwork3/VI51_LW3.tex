@@ -14,7 +14,7 @@
 
 \graphicspath{{imgs/auto/},{imgs/},{../common/}}
 
-\declaredocument{VI51 Lab Work \#3}{Coordinated Movement Algorithms}{UTBM-INFO-VI51-LW3}
+\declaredocument{VI51 Lab Work \#3}{Coordinated Movement Algorithms}{UTBM-INFO-VI51-LW4}
 
 \addauthorvalidator*[St\'ephane Galland]{St{\'e}phane}{Galland}{Teacher}
 
@@ -25,7 +25,7 @@
 \Set[french]{mafr_contact_phone}{03~84~58~34~18}
 \Set[english]{mafr_contact_phone}{+33 384~583~418}
 
-\gdef\skeletonName{\texttt{\mbox{LW3\_VI51\_skeleton\string.jar}}}
+\gdef\skeletonName{\texttt{\mbox{LW4\_VI51\_skeleton\string.jar}}}
 
 \begin{document}
 
@@ -51,50 +51,49 @@ The skeleton contains a framework in the package \texttt{fr.utbm.info.vi51.frame
 This framework contains the abstract implementation for the execution platform.
 \emph{It is recommended to read this code and the associated Javadoc.}
 
-The package \texttt{fr.utbm.info.vi51.labwork2} contains the code to complete during this lab work.
+The package \texttt{fr.utbm.info.vi51.labwork4} contains the code to complete during this lab work.
 
 The subpackages are or will be:
 \begin{itemize}
-\item \texttt{fr.utbm.info.vi51.general.behavior} is the package that contains the movement behaviors (kinematic and/or steering).
-\item \texttt{fr.utbm.info.vi51.general.formation} is the package in which you must create the formation patterns.
-\item \texttt{fr.utbm.info.vi51.labwork3.environment} contains the definition of the environment and the objects inside that are specific to the lab work.
-\item \texttt{fr.utbm.info.vi51.labwork3.gui} contains the UI for the project.
-\item \texttt{fr.utbm.info.vi51.labwork3.agent} contains the code of the agent to complete.
-\item The file \texttt{fr/utbm/info/vi51/labwork3/MainProgram.java} contains the main program.
+\item \texttt{fr.utbm.info.vi51.motionbehavior} is the package that contains the movement behaviors (kinematic and/or steering).
+\item \texttt{fr.utbm.info.vi51.formation} is the package in which you must create the formation patterns.
+\item \texttt{fr.utbm.info.vi51.labwork4.environment} contains the definition of the environment and the objects inside that are specific to the lab work.
+\item \texttt{fr.utbm.info.vi51.labwork4.gui} contains the UI for the project.
+\item \texttt{fr.utbm.info.vi51.labwork4.agent} contains the code of the agent to complete.
+\item The file \texttt{fr/utbm/info/vi51/labwork4/MainProgram.java} contains the main program.
 \end{itemize}
 
 \section{Work to be Done during the Lab Work Session}
 
 The following sections describe the work to be done during this lab work session.
 
-\subsection{API for the Formation Patterns}
+\subsection{API for the Formation}
 
-You must implement a data structure able to represent a formation: the formation pattern.
-Figure \figref{classdiagram} provides you the UML class diagram of the formation pattern API.
+You must implement a data structure able to represent a formation: the formation object.
+Figure \figref{classdiagram} provides you an example of UML class diagram of the formation API.
 
-\mfigure[p]{width=\linewidth}{classdiagram}{Class diagram of the formation pattern API}{classdiagram}
+\mfigure[p]{width=\linewidth}{classdiagram}{Class diagram of the formation API}{classdiagram}
 
 You should:
 \begin{enumerate}[a)]
-\item create the abstract class \texttt{FormationSlot}, representing a position in the formation pattern. This position could be for the leader or for the following agents.
-\item create the concrete classes for the leader and follower slots: \texttt{LeaderFormationSlot} and \texttt{FollowerFormationSlot}.
-\item create the abstract class \texttt{FormationPattern}, representing the global pattern of the formation.
+\item create the abstract class \texttt{Anchor}, representing a position in the formation. This position could be for the leader or for the following agents.
+\item create the class \texttt{Formation}, representing the global pattern of the formation.
 \end{enumerate}
 
 \subsection{Body Guard Formation Pattern}
 
-You must create a specific implementation of a formation pattern: the body guard formation.
+You must create a specific implementation of a formation pattern: the body guard (or circle) formation.
 In this pattern, the leader is at the center of formation.
 The following agents are the body guards: they are located on circle centered on the leader of the formation, and they see outside the formation (see Figure \figref{bodyguardpattern}, page \figpageref{bodyguardpattern}).
-The definition of the formation pattern must be coded into the function \texttt{scale(int)}, where the parameter is the number of slots in the pattern (including the leader slot).
+The definition of the formation pattern must be coded into the function \texttt{scale(int)}, where the parameter is the number of anchors in the pattern (including the leader anchor).
 
 \mfigure[p]{width=.6\linewidth}{bodyguardpattern}{The body guard formation pattern}{bodyguardpattern}
 
 \begin{upmcaution}
-\Emph{Caution:} It is important to have a clear distinction between the concepts of ``formation slot'', ``agent'', and ``agent body''. \newline\newline
+\Emph{Caution:} It is important to have a clear distinction between the concepts of ``formation anchor'', ``agent'', and ``agent body''. \newline\newline
 The ``agent'' is the artificial intelligence which is exhibiting a behavior. It is intelligent and autonomous. \newline\newline
 The ``agent body'' is the representation of the agent on the physic world. It is not intelligent nor autonomous. \newline\newline
-The ``formation slot'' is a representation of a position in a formation pattern. It is not an agent nor an agent body.
+The ``formation anchor'' is a representation of a position in a formation pattern. It is not an agent nor an agent body.
 \end{upmcaution}
 
 \subsection{Leader Behavior}
@@ -111,37 +110,25 @@ You shall:
 \item update the previous event handler for updating the position and orientation of the formation pattern.
 \end{enumerate}
 
-\subsection{Slot Assignment Policy}
+\subsection{anchor Assignment Policy}
 
-Since the number of slots and the number of agents may not match, it is important to define a policy for assigning the slots to the agents.
-This policy should be coded into the class \texttt{FormationAssignment}.
-An instance of this class is provided to each following agent for obtaining a slot.
+Since the number of anchors and the number of agents may not match, it is important to define a policy for assigning the anchors to the agents.
+This policy should be coded into a subclass of \texttt{FormationAssignmentPolicy}.
+An instance of this class is provided to each following agent for obtaining a anchor.
 
-The following SARL code provides you an example of the ``FIFO'' assignment of the slots:
-\begin{lstlisting}
-class FormationAssignment {
-  private var nextFreeSlotIndex = 1
-  def allocate(isTheCallerTheLeader : boolean) {
-    var index = nextFreeSlotIndex
-    nextFreeSlotIndex ++
-    return index
-  }
-}
-\end{lstlisting}
-
-The function \code{allocate()} is invoked by the following agents for obtaining the index of the slot that should be used.
+The function \code{assignAnchorToMe()} is invoked by the following agents for obtaining the anchor that should be used.
 
 You shall code this class.
 
 \subsection{Follower Behavior}
 
 Assuming that the code skeleton puts the formation pattern into the knowledge of the follower agent, write the behavior of the following agent.
-The following agent is seeking the position of the assigned slot in the formation, and aligning to the slot's orientation.
+The following agent is seeking the position of the assigned anchor in the formation, and aligning to the anchor's orientation.
 Figure \figref{bodyguardagents} on page \figpageref{bodyguardagents} provides an example of relationship between the follower bodies and the body guard formation pattern.
 
 You shall:
 \begin{enumerate}[a)]
-\item write the code for retreiving the position and orientation of the formation's slot in the SARL follower agent.
+\item write the code for retreiving the position and orientation of the formation's anchor in the SARL follower agent.
 \item implement the movement behaviour of the SARL follower agent.
 \end{enumerate}
 

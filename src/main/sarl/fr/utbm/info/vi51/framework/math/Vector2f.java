@@ -653,7 +653,7 @@ public class Vector2f extends Tuple2f<Vector2f> {
 		return - signedAngle(v);
 	}
 
-	/** If the tuple is nul then b else a.
+	/** If the tuple is nul then v else this.
 	 * 
 	 * @param v the vector.
 	 * @return the vector.
