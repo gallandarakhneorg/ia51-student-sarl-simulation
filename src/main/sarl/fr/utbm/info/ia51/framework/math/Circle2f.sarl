@@ -1,0 +1,131 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.framework.math
+
+import com.google.common.base.Objects
+
+/** 2D Rectangle with floating-point values.
+ *
+ * <p>This code is coped from <a href="http://www.arakhne.org/afc">Arakhne Foundation Classes</a>.
+ * 
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+class Circle2f extends Shape2f<Circle2f> {
+
+	val center = new Point2f
+	var radius : float
+	
+	/**
+	 */
+	new {
+	}
+
+	/**
+	 * @param center
+	 * @param radius
+	 */
+	new(center : Point2f, radius : float) {
+		this.center.set(center)
+		this.radius = radius
+	}
+
+	/**
+	 * @param x
+	 * @param y
+	 * @param radius
+	 */
+	new(x : float, y : float, radius : float) {
+		this.center.set(x, y)
+		this.radius = radius
+	}
+
+	override equals(obj : Object) : boolean {
+		if (obj instanceof Circle2f) {
+			return this.center == obj.center && this.radius == obj.radius
+		}
+		return false
+	}
+	
+	override hashCode : int {
+		Objects.hashCode(this.center, this.radius)
+	}
+
+	/** Replies a copy of the center point of this circle.
+	 * 
+	 * @return the center point.
+	 */
+	def getCenter : Point2f {
+		this.center.clone
+	}
+
+	/** Replies the radius of the circle.
+	 * 
+	 * @return the radius.
+	 */
+	def getRadius : float {
+		this.radius
+	}
+	
+	override toString : String {
+		"[" + this.center.toString() + "-" + this.radius + "]"
+	}
+
+	/** Replies if an intersection exists between this rectangle and the given shape.
+	 * 
+	 * @param s - the shape.
+	 * @return <code>true</code> if an intersection exists.
+	 */
+	def intersects(s : Shape2f<?>) : boolean {
+		if (s instanceof Circle2f) {
+			var x = s.center.x - this.center.x
+			var y = s.center.y - this.center.y
+			return ((x * x) + (y * y)) < ((this.radius + s.radius) * (this.radius + s.radius))
+		}
+		if (s instanceof Rectangle2f) {
+			return s.intersects(this)
+		}
+		if (s instanceof MotionHull2f) {
+			return s.intersects(this)
+		}
+		throw new IllegalArgumentException
+	}
+
+	override translate(vector : Tuple2f<?>) : Circle2f {
+		new Circle2f(
+				this.center.x + vector.x,
+				this.center.y + vector.y,
+				this.radius)
+	}
+	
+	override getBounds : Rectangle2f {
+		new Rectangle2f(
+				this.center.x - this.radius,
+				this.center.y - this.radius,
+				this.center.x + this.radius,
+				this.center.y + this.radius)
+	}
+	
+	override getMaxDemiSize : float {
+		this.radius
+	}
+	
+}

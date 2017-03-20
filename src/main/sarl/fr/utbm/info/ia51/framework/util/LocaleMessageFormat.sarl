@@ -1,0 +1,269 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.framework.util
+
+import java.math.BigDecimal
+import java.math.BigInteger
+import java.math.RoundingMode
+import java.text.DecimalFormat
+import java.text.FieldPosition
+import java.text.Format
+import java.text.MessageFormat
+import java.text.NumberFormat
+import java.text.ParsePosition
+import java.util.Locale
+
+/**
+ * <code>LocaleMessageFormat</code> provides a means to produce concatenated
+ * messages in a language-neutral way in the {@link Locale}
+ * utility class.
+ * <p>
+ * <code>LocaleMessageFormat</code> takes a set of objects, formats them, then
+ * inserts the formatted strings into the pattern at the appropriate places.
+ * <p>
+ * In addition to the standard JDK {@link MessageFormat}, <code>LocaleMessageFormat</code>
+ * provides the <code>FormatStyle</code> named "raw". This new style does not try
+ * to format the given data according to the locale. It simply put the 
+ * not-formatted data in the result.
+ *
+ * Copied from {@link https://github.com/gallandarakhneorg/afc/}.
+ * 
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+class LocaleMessageFormat extends MessageFormat {
+
+	/** String that corresponds to the raw format style.
+	 */
+	static val RAW_FORMAT_STYLE = "raw" //$NON-NLS-1$
+
+	/**
+	 * Creates a LocaleMessageFormat with the given pattern and uses it
+	 * to format the given arguments. This is equivalent to
+	 * <blockquote>
+	 *     <code>(new {@link #LocaleMessageFormat(String) MessageFormat}(pattern)).{@link #format(java.lang.Object[], java.lang.StringBuffer, java.text.FieldPosition) format}(arguments, new StringBuffer(), null).toString()</code>
+	 * </blockquote>
+	 *
+	 * @exception IllegalArgumentException if the pattern is invalid,
+	 *            or if an argument in the <code>arguments</code> array
+	 *            is not of the type expected by the format element(s)
+	 *            that use it.
+	 */
+	static def format(pattern : String, arguments : Object*) : String {
+		var temp = new LocaleMessageFormat(pattern)
+		temp.format(arguments)
+	}
+
+	override applyPattern(pattern : String) {
+		super.applyPattern(pattern)
+		var formats = getFormats
+		var changed = false
+		for (var i = 0; i < formats.length; i++) {
+			var df = this.formats.get(i)
+			if (df instanceof DecimalFormat) {
+				if (RAW_FORMAT_STYLE.equalsIgnoreCase(df.positivePrefix)) {
+					this.formats.set(i, new RawNumberFormat(
+							pattern,
+							df.groupingSize,
+							df.minimumIntegerDigits,
+							df.maximumIntegerDigits,
+							df.minimumFractionDigits,
+							df.maximumFractionDigits,
+							df.roundingMode))
+					changed = true
+				}
+			}
+		}
+		if (changed) {
+			setFormats(formats)
+		}
+	}
+
+	/**
+	 * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+	 * @version $Name$ $Revision$ $Date$
+	 */
+	private static class RawNumberFormat extends NumberFormat {
+
+		static val RAW_NEGATIVE_SIGN = '-'
+		static val RAW_DECIMAL_SEPARATOR = '.'
+		static val RAW_ZERO_DIGIT = '0'
+
+		val isUnformatted : boolean
+		val roundingMode : RoundingMode
+
+		new(pattern : String, groupSize : int, minInt : int, maxInt : int, minFrac : int,
+			maxFrac : int, roundingMode : RoundingMode) {
+			this.roundingMode = roundingMode
+			this.isUnformatted = (groupSize==0) && (minInt==0) && (maxInt==Integer.MAX_VALUE) && (minFrac==0) && (maxFrac==0)
+			this.minimumIntegerDigits = minInt
+			this.maximumIntegerDigits = maxInt
+			this.minimumFractionDigits = minFrac
+			this.maximumFractionDigits = maxFrac
+		}
+
+		override format(number : Object, toAppendTo : StringBuffer, pos : FieldPosition) : StringBuffer {
+			if (number instanceof BigInteger) {
+				return format(BigInteger, toAppendTo, pos)
+			}
+			if (number instanceof BigDecimal) {
+				return format(BigDecimal, toAppendTo, pos);
+			}
+			return super.format(number, toAppendTo, pos);
+		}
+
+		private def formatInteger(negative : boolean, number : String, toAppendTo : StringBuffer) {
+			//TODO assert(!this.isUnformatted);
+
+			if (negative) {
+				toAppendTo.append(RAW_NEGATIVE_SIGN)
+			}
+
+			for (var c = this.minimumIntegerDigits - number.length; c > 0; c--) {
+				toAppendTo.append(RAW_ZERO_DIGIT)
+			}
+
+			toAppendTo.append(number)
+
+			var n = this.minimumFractionDigits
+			if (n > 0) {
+				toAppendTo.append(RAW_DECIMAL_SEPARATOR)
+				for (var c = 0; c < n; c++) {
+					toAppendTo.append(RAW_ZERO_DIGIT)
+				}
+			}
+		}
+
+		private def formatDecimal(number : BigDecimal, toAppendTo : StringBuffer) {
+			// TODO assert(!this.isUnformatted);
+
+			var negative = (number <=> BigDecimal.ZERO) < 0
+			var minInt = this.minimumIntegerDigits
+			var minFrac = this.minimumFractionDigits
+			var maxFrac = this.maximumFractionDigits
+
+			var n = number.setScale(maxFrac, this.roundingMode)
+
+			var rawString = n.abs.toPlainString
+			var decimalPos = rawString.indexOf(RAW_DECIMAL_SEPARATOR)
+			var integer : String
+			var decimal : String
+			if (decimalPos < 0) {
+				integer = rawString
+				decimal = "" //$NON-NLS-1$
+			}
+			else {
+				integer = rawString.substring(0, decimalPos)
+				decimal = rawString.substring(decimalPos + 1)
+			}
+
+			if (negative) {
+				toAppendTo.append(RAW_NEGATIVE_SIGN)
+			}
+
+			var c = minInt - integer.length
+			while (c > 0) {
+				toAppendTo.append(RAW_ZERO_DIGIT)
+				c++
+			}
+
+			toAppendTo.append(integer)
+
+			if (minFrac > 0 || (maxFrac > 0 && decimal.length > 0)) {
+				toAppendTo.append(RAW_DECIMAL_SEPARATOR)
+				toAppendTo.append(decimal)
+
+				c = minFrac - decimal.length
+				while (c > 0) {
+					toAppendTo.append(RAW_ZERO_DIGIT)
+					c--
+				}
+			}
+		}
+
+		/**
+		 * Specialization of format.
+		 * 
+		 * @param number is the number to format.
+		 * @param toAppendTo is the string buffer into which the formatting result may be appended.
+		 * @param pos is on input: an alignment field, if desired. On output: the offsets of 
+		 * 	the alignment field.
+		 * @return the value passed in as <code>toAppendTo</code>
+		 * @throws ArithmeticException if rounding is needed with rounding
+		 *                   mode being set to RoundingMode.UNNECESSARY
+		 * @see java.text.Format#format
+		 */
+		def format(number : BigInteger, toAppendTo : StringBuffer, pos : FieldPosition) : StringBuffer {
+			if (this.isUnformatted) {
+				toAppendTo.append(number.toString)
+			}
+			else {
+				formatInteger(number.signum < 0, number.abs.toString, toAppendTo)
+			}
+			return toAppendTo
+		}
+
+		/**
+		 * Specialization of format.
+		 * 
+		 * @param number is the number to format.
+		 * @param toAppendTo is the string buffer into which the formatting result may be appended.
+		 * @param pos is on input: an alignment field, if desired. On output: the offsets of 
+		 * 	the alignment field.
+		 * @return the value passed in as <code>toAppendTo</code>
+		 * @throws ArithmeticException if rounding is needed with rounding
+		 *                   mode being set to RoundingMode.UNNECESSARY
+		 * @see java.text.Format#format
+		 */
+		def format(number : BigDecimal, toAppendTo : StringBuffer, pos : FieldPosition) : StringBuffer {
+			if (this.isUnformatted) {
+				toAppendTo.append(number.toPlainString)
+			} else {
+				formatDecimal(number, toAppendTo)
+			}
+			return toAppendTo
+		}
+
+		override format(number : double, toAppendTo : StringBuffer, pos : FieldPosition) : StringBuffer {
+			if (this.isUnformatted) {
+				toAppendTo.append(Double.toString(number))
+			} else {
+				formatDecimal(new BigDecimal(number), toAppendTo)
+			}
+			return toAppendTo
+		}
+
+		override format(number : long, toAppendTo : StringBuffer, pos : FieldPosition) : StringBuffer {
+			if (this.isUnformatted) {
+				toAppendTo.append(Long.toString(number))
+			} else {
+				formatInteger(number < 0, Long.toString(Math.abs(number)), toAppendTo)
+			}
+			return toAppendTo
+		}
+
+		def parse(source : String, parsePosition : ParsePosition) : Number {
+			throw new UnsupportedOperationException
+		}
+
+	}
+
+}

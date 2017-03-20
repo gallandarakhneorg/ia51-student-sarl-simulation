@@ -1,0 +1,115 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.general.tree.tree4d
+
+import fr.utbm.info.ia51.framework.environment.ShapedObject
+import fr.utbm.info.ia51.framework.math.Rectangle2f
+import fr.utbm.info.ia51.general.tree.abstracts.AbstractArraySpatialTreeNode
+import java.lang.reflect.Array
+
+/**
+ * Definition of a quadtree node.
+ * 
+ * @param <D> - type of the data in the node.
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+class QuadTreeNode<D extends ShapedObject> extends AbstractArraySpatialTreeNode<QuadTreeNode<D>, D> {
+
+	/** Replies the lower-left child node.
+	 * 
+	 * @return the node.
+	 */
+	def getLowerLeftChild : QuadTreeNode<D> {
+		this.children?.get(0)
+	}
+
+	/** Replies the upper-left child node.
+	 * 
+	 * @return the node.
+	 */
+	def getUpperLeftChild : QuadTreeNode<D> {
+		this.children?.get(1)
+	}
+
+	/** Replies the lower-right child node.
+	 * 
+	 * @return the node.
+	 */
+	def getLowerRightChild : QuadTreeNode<D> {
+		this.children?.get(2)
+	}
+
+	/** Replies the upper-right child node.
+	 * 
+	 * @return the node.
+	 */
+	def getUpperRightChild : QuadTreeNode<D> {
+		this.children?.get(3)
+	}
+
+	override createChildren {
+		if (this.children === null) {
+			this.children = Array.newInstance(QuadTreeNode, 4) as QuadTreeNode<D>[]
+		}
+		if (this.children.get(0) === null) {
+			var bounds = this.bounds
+			// TODO assert (bounds != null);
+			var lower = bounds.lower
+			var center = bounds.center
+			this.children.set(0, newNodeInstance(new Rectangle2f(lower, center)))
+			this.children.get(0).parent = this
+		}
+		if (this.children.get(1) === null) {
+			var bounds = this.bounds
+			// TODO assert (bounds != null);
+			var lower = bounds.lower
+			var upper = bounds.upper
+			var center = bounds.center
+			this.children.set(1, newNodeInstance(
+					new Rectangle2f(
+							lower.x, center.y,
+							center.x, upper.y)))
+			this.children.get(1).parent = this
+		}
+		if (this.children.get(2) === null) {
+			var bounds = this.bounds
+			// TODO assert (bounds != null);
+			var lower = bounds.lower
+			var upper = bounds.upper
+			var center = bounds.center
+			this.children.set(2, newNodeInstance(
+					new Rectangle2f(
+							center.x, lower.y,
+							upper.x, center.y)))
+			this.children.get(2).parent = this
+		}
+		if (this.children.get(3) === null) {
+			var bounds = this.bounds
+			// TODO assert (bounds != null);
+			var upper = bounds.upper
+			var center = bounds.center
+			this.children.set(3, newNodeInstance(new Rectangle2f(center, upper)))
+			this.children.get(3).parent = this
+		}
+	}
+
+}

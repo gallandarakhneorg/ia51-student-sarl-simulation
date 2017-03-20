@@ -1,0 +1,181 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.general.tree.abstracts;
+
+import fr.utbm.info.ia51.framework.environment.ShapedObject
+import fr.utbm.info.ia51.framework.math.Rectangle2f
+import fr.utbm.info.ia51.general.tree.SpatialTree
+import fr.utbm.info.ia51.general.tree.SpatialTreeNode
+import java.io.ObjectInputStream
+import java.lang.ref.WeakReference
+import java.util.Collection
+import java.util.Collections
+import java.util.TreeSet
+
+/**
+ * Abstract definition of a spatial tree node.
+ * 
+ * @param <N> - type of the root node.
+ * @param <D> - type of the data inside the node.
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+abstract class AbstractSpatialTreeNode<N extends SpatialTreeNode<N, D>, D extends ShapedObject> implements SpatialTreeNode<N, D> {
+
+	var bounds : Rectangle2f
+	var data : Collection<D>
+	transient var parentNode : WeakReference<N>
+	transient var tree : WeakReference<SpatialTree<N, D>>
+
+	/** 
+	 * @param bounds
+	 */
+	new (bounds : Rectangle2f = null) {
+		this.bounds = bounds
+	}
+
+	private def readObject(stream : ObjectInputStream) {
+		stream.defaultReadObject
+		for (child : this.children) {
+			(child as AbstractSpatialTreeNode<N, D>).parent = this as N
+		}
+	}
+
+	/** Replies the tree in which this node is located..
+	 *
+	 * @return the tree.
+	 */
+	protected def getTree : SpatialTree<N, D> {
+		this.tree?.get
+	}
+
+	/** Create an instance of a tree node for the tree.
+	 *
+	 * @param bounds - the bounds covered by the node.
+	 * @return the node.
+	 */
+	protected def newNodeInstance(bounds : Rectangle2f) : N {
+		getTree.nodeFactory.newInstance(bounds, this as N)
+	}
+
+	/** Clear the list of data.
+	 */
+	protected def clearData {
+		if (this.data !== null) {
+			this.data.clear
+		}
+	}
+
+	override getData : Collection<D> {
+		if (this.data === null) emptyList else Collections::unmodifiableCollection(this.data)
+	}
+
+	override getDataCount : int {
+		this.data?.size
+	}
+
+	/** Replies the internal data structure that is available for storing data.
+	 * 
+	 * @return the data structure
+	 */
+	protected final def getInternalDataStructure : Collection<D> {
+		if (this.data === null) {
+			this.data = new TreeSet
+		}
+		return this.data
+	}
+
+	/** Change the internal data structure that is available for storing data.
+	 * The data are moved from the previous data structure to the new data structure.
+	 * 
+	 * @param type the type of the internal data structure to use.
+	 */
+	protected final def setInternalDataStructure(type : Class<? extends Collection<D>>) {
+		var newData = type.newInstance
+		if (this.data !== null) {
+			newData.addAll(this.data)
+		}
+		this.data = newData
+	}
+
+	/** Remove the data.
+	 * This function cannot be overridden.
+	 * 
+	 * @param data
+	 */
+	protected final def removeDataNotOverriddable(data : D) {
+		if (this.data !== null) {
+			this.data.remove(data)
+			if (this.data.isEmpty) {
+				this.data = null
+			}
+		}
+	}
+
+	override getParent : N {
+		this.parentNode?.get
+	}
+
+	/** Change the parent node.
+	 *
+	 * @param parent the new parent node.
+	 */
+	protected def setParent(parent : N) {
+		var t : SpatialTree
+		if (parent === null) {
+			this.parentNode = null
+			t = null
+		} else {
+			this.parentNode = new WeakReference(parent)
+			if (parent instanceof AbstractSpatialTreeNode<?, ?>) {
+				t = parent.getTree
+			} else {
+				t = null
+			}
+		}
+		setTree(t)
+	}
+
+	/** Change the tree link.
+	 *
+	 * @param tree the container.
+	 */
+	protected def setTree(tree : SpatialTree<N, D>) {
+		if (tree === null) {
+			this.tree = null
+		} else {
+			this.tree = new WeakReference(tree)
+		}
+	}
+
+	override getBounds : Rectangle2f {
+		this.bounds
+	}
+
+	override isRoot : boolean {
+		this.parentNode === null
+	}
+	
+	override toString : String {
+		this.internalDataStructure.toString
+	}
+
+}

@@ -1,0 +1,74 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2015-17 Stephane GALLAND.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.labwork1.environment.^agent
+
+import io.sarl.lang.core.EventListener
+import io.sarl.lang.core.Space
+
+import java.util.UUID
+import fr.utbm.info.ia51.labwork1.environment.maze.Direction
+
+/** Space that is representing the Jaak environment.
+*
+* @author $Author: sgalland$
+* @version $FullVersion$
+* @mavengroupid $GroupId$
+* @mavenartifactid $ArtifactId$
+*/
+interface MazeSpace extends Space {
+
+	/** Replies the identifier of the creator of the space.
+	 *
+	 * @return the identifier of the space creator.
+	 */
+	def getCreatorID : UUID 
+
+	/** Destroy the space.
+	 */
+	def destroy
+
+	/** Spawn the body with the given ID.
+	 *
+	 * @param binder - the binder between the skill and the space.
+	 */
+	def spawnBody(binder : EventListener)
+
+	/** Destroy the body with the given ID.
+	 *
+	 * @param binder - the binder between the skill and the space.
+	 */
+	def killBody(binder : EventListener)
+
+	/** Give the perceptions to the agents that is owning the given body.
+	 *
+	 * @param perception - the event to give to the agent.
+	 */
+	def notifyPerception(perception : Perception)
+
+	/** Emit an influence for the given agent.
+	 *
+	 * @param influenceTime - the time at which the influence is applied.
+	 * @param emitter - the identifier of the emitter.
+	 * @param influence - the influence to emit.
+	 */
+	def influence(influenceTime : int, emitter : UUID, direction : Direction)
+
+}

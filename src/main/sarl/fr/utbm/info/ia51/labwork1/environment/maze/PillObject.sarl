@@ -1,0 +1,84 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2015-17 Stephane GALLAND.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.labwork1.environment.maze
+
+import java.util.Objects
+
+import org.eclipse.xtext.xbase.lib.Pure
+import fr.utbm.info.ia51.framework.math.Point2i
+
+/**
+ * Pill in the PacMan environment.
+ * 
+ * @author $Author: sgalland$
+ * @version $FullVersion$
+ * @mavengroupid $GroupId$
+ * @mavenartifactid $ArtifactId$
+ */
+class PillObject extends PacmanObject {
+	
+	val isSuperPill : boolean 
+	
+	new (x : int, y : int, maze : Maze, isSuperPill : boolean) {
+		super(x, y, maze)
+		this.isSuperPill = isSuperPill
+	}
+
+	new (position : Point2i, maze : Maze, isSuperPill : boolean) {
+		super(position, maze)
+		this.isSuperPill = isSuperPill
+	}
+	
+	@Pure
+	def equals(obj : Object) : boolean {
+		if (obj === this) {
+			return true
+		}
+		if (!super.equals(obj)) {
+			return false
+		}
+		var o = obj as PillObject
+		o.isSuperPill() == isSuperPill()
+	}
+	
+	@Pure
+	def hashCode : int {
+		Objects.hash(super.hashCode, this.isSuperPill)
+	}
+	
+	/** Replies the pill has the super power.
+	 */
+	@Pure
+	def isSuperPill : boolean {
+		this.isSuperPill
+	}
+
+	@Pure
+	final def isOccluder : boolean {
+		false
+	}
+
+	@Pure
+	def isPickable : boolean {
+		true
+	}
+	
+}

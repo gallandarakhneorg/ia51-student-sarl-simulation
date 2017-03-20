@@ -1,0 +1,62 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.general.frustum
+
+import java.util.UUID
+
+import fr.utbm.info.ia51.framework.environment.AbstractFrustum
+import fr.utbm.info.ia51.framework.math.Circle2f
+import fr.utbm.info.ia51.framework.math.Point2f
+import fr.utbm.info.ia51.framework.math.Shape2f
+import fr.utbm.info.ia51.framework.math.Vector2f
+
+/**
+ * A circular frustum.
+ * 
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+class CircleFrustum extends AbstractFrustum {
+
+	val radius : float
+	
+	/**
+	 * @param owner the identifier of the owner of this frustum.
+	 * @param radius the radius of the field-of-view.
+	 */
+	new (owner : UUID, radius : float) {
+		super(owner)
+		this.radius = radius
+	}
+	
+	/** Replies the radius of the frustum.
+	 *
+	 * @return the radius.
+	 */
+	def getRadius : float {
+		this.radius
+	}
+
+	override toShape(position : Point2f, orientation : Vector2f) : Shape2f<?> {
+		new Circle2f(position, this.radius)
+	}
+
+}

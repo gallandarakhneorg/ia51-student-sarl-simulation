@@ -1,0 +1,117 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2014-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.framework
+
+import fr.utbm.info.ia51.framework.environment.DynamicType
+import fr.utbm.info.ia51.framework.environment.Environment
+import fr.utbm.info.ia51.framework.environment.StopSimulation
+import fr.utbm.info.ia51.framework.gui.FrameworkGUI
+import fr.utbm.info.ia51.framework.util.SpawnMapping
+import io.janusproject.Boot
+import io.janusproject.JanusConfig
+import io.janusproject.kernel.Kernel
+import io.janusproject.services.contextspace.ContextSpaceService
+import io.janusproject.util.LoggerCreator
+import io.sarl.lang.core.Address
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.logging.Level
+
+/**
+ * Launcher of the simulation framework.
+ *
+ * This launcher needs the {@link http://www.janusproject.io Janus platform}.
+ * 
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+public class FrameworkLauncher {
+	
+	static var environmentInteractionSpace : UUID
+	static var environmentSingleton : Environment 
+	static var uiSingleton : FrameworkGUI 
+	static var kernel : Kernel 
+	static val canStop = new AtomicBoolean(false)
+
+	/** Launch the simulation and its associated UI.
+	 * 
+	 * @param environment is the environment to use.
+	 * @param spawnMapping the mapping from body to agent type.
+	 * @param behaviorType the type of the agent behaviors.
+	 * @param gui is the GUI to launch.
+	 * @param parameters the parameters to give to every agent.
+	 * @throws Exception if the Janus platform cannot be started.
+	 */
+	static def launchSimulation(environment : Environment, spawnMapping : SpawnMapping,
+			behaviorType : DynamicType, gui : FrameworkGUI, parameters : Object*) {
+		Boot::setOffline(true)
+		Boot::setVerboseLevel(LoggerCreator::toInt(Level::INFO))
+		Boot::showJanusLogo
+		
+		environmentInteractionSpace = UUID::randomUUID
+				
+		uiSingleton = gui
+		environmentSingleton = environment
+		
+		var params = #[
+			environmentSingleton, environmentInteractionSpace,
+			spawnMapping, behaviorType
+		]
+		System.arraycopy(parameters, 0, params, 4, parameters.length)
+		
+		kernel = Boot::startJanus(
+				typeof(SimulatorAgent),
+				params)
+		if (uiSingleton !== null) {
+			if (environmentSingleton !== null) {
+				environmentSingleton.addEnvironmentListener(uiSingleton)
+			}
+			uiSingleton.visible = true
+		}
+		canStop.set(true)
+	}
+	
+	/** Stop the simulation right now.
+	 */
+	static def stopSimulation {
+		if (!canStop.get) {
+			throw new IllegalStateException("You must call startSimulation() before stopSimulation().")
+		}
+		var context = kernel.getService(typeof(ContextSpaceService)).getContext(
+				UUID::fromString(JanusConfig::DEFAULT_CONTEXT_ID_VALUE))
+		var ^space = context.getDefaultSpace
+		var adr = new Address(^space.spaceID, UUID.randomUUID)
+		var sSimulation = new StopSimulation(adr)
+		context.defaultSpace.emit(sSimulation)
+		if (uiSingleton !== null) {
+			uiSingleton.visible = false
+			if (environmentSingleton !== null) {
+				environmentSingleton.removeEnvironmentListener(uiSingleton)
+			}
+			uiSingleton.dispose
+		}
+		environmentSingleton = null
+		environmentInteractionSpace = null
+		uiSingleton = null
+		kernel = null
+	}
+	
+}

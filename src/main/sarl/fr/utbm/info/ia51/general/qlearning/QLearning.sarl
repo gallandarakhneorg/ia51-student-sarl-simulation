@@ -1,0 +1,149 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.general.qlearning
+
+import java.util.ArrayList
+import java.util.List
+import java.util.Map
+import java.util.Random
+import java.util.TreeMap
+
+/**
+ * This is the QLearning core algorithm.
+ * 
+ * @param <S> is the type of the states
+ * @param <A> is the type of the actions
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+class QLearning<S extends QState, A extends QAction> {
+
+	val random = new Random
+	val problem : QProblem<S, A> 
+	val qValues = new TreeMap<S,Map<A,Float>>(new QComparator) 
+
+	/**
+	 * @param problem is the problem to learn on.
+	 */
+	new (problem : QProblem<S, A>) {
+		this.problem = problem
+		for(s : problem.availableStates) {
+			var m = new TreeMap<A, Float>(new QComparator)
+			this.qValues.put(s, m)
+			for(a : problem.getAvailableActionsFor(s)) {
+				m.put(a, 0f)
+			}
+		}
+	}
+
+	/**
+	 * @param numberOfIterations are the number of iterations to execute for this call.
+	 */
+	def learn(numberOfIterations : int) {
+		var actions : List<A> 
+		var state : S 
+		var action : A
+		var result : QFeedback<S> 
+				
+		state = this.problem.currentState
+		
+		for(i : 0..<numberOfIterations) {
+			if (this.random.nextFloat < this.problem.nu) {
+				state = this.problem.randomState
+			}
+			
+			if (this.random.nextFloat < this.problem.rho) {
+				actions = this.problem.getAvailableActionsFor(state)
+				action = actions.get(this.random.nextInt(actions.size))
+			} else {
+				action = state.getBestAction
+			}
+			
+			result = forceFeedBack(state, action, Float::NaN)
+			
+			state = result.newState
+		}
+	}
+	
+	/** Force the update of the QLearning graph with the given feedback.
+	 * 
+	 * @param state is the state from which the feedback is given.
+	 * @param action is the state from which the feedback is given.
+	 * @param feedbackValue is the feedback value.
+	 * @return the feedback used.
+	 */
+	def forceFeedBack(state : S, action : A, feedbackValue : float) : QFeedback<S> {
+		var result = this.problem.takeAction(state,action)
+		// TODO assert(result!=null);
+		if (!Float::isNaN(feedbackValue)) {
+			result.score = feedbackValue
+		}
+		
+		var q = getQ(state, action)
+		
+		var futureAction = result.newState.getBestAction
+		var maxQ = getQ(result.newState, futureAction)
+		
+		q = (1f - this.problem.alpha) * q + this.problem.alpha * (result.score + this.problem.gamma * maxQ)
+		
+		putQ(state, action, q)
+		
+		return result
+	}
+	
+	/** Replies the best action from the QState or a random action
+	 * if more than 1 best action.
+	 * 
+	 * @param state
+	 * @return the best action
+	 */
+	def getBestAction(state : S) : A {
+		var m = this.qValues.get(state)
+		// TODO assert(m!=null);
+		var bestActions = new ArrayList<A>
+		var bestScore = Float::NEGATIVE_INFINITY
+		for(entry : m.entrySet) {
+			if (entry.value > bestScore) {
+				bestActions.clear
+				bestActions += entry.key
+				bestScore = entry.value
+			} else if (entry.value == bestScore) {
+				bestActions += entry.key
+			}
+		}
+		// TODO assert(!bestActions.isEmpty());
+		return bestActions.get(this.random.nextInt(bestActions.size))
+	}
+	
+	private def getQ(state : S, action : A) : float {
+		var m = this.qValues.get(state)
+		// TODO assert(m!=null);
+		var q = m.get(action)
+		q?.floatValue
+	}
+
+	private def putQ(state : S, action : A, q : float) {
+		var m = this.qValues.get(state)
+		// TODO assert(m!=null);
+		m.put(action, q)
+	}
+
+}

@@ -1,0 +1,152 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.framework.gui;
+
+import fr.utbm.info.ia51.framework.environment.EnvironmentListener
+import fr.utbm.info.ia51.framework.environment.WorldModelState
+import fr.utbm.info.ia51.framework.math.Point2f
+import fr.utbm.info.ia51.framework.math.Shape2f
+import fr.utbm.info.ia51.framework.math.Vector2f
+import java.awt.Graphics2D
+import java.awt.Shape
+import java.io.Serializable
+
+/**
+ * GUI for the simulation framework.
+ * 
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+interface FrameworkGUI extends EnvironmentListener {
+	
+	/** Change the visibility of the GUI.
+	 * 
+	 * @param visible
+	 */
+	def setVisible(visible : boolean)
+	
+	/** Release all the resources own by the UI.
+	 */
+	def dispose
+	/** Change the message in the dedicated box.
+	 * 
+	 * @param message - the message.
+	 */
+	def setMessage(message : String)
+
+	/** Replies the message in the dedicated box.
+	 * 
+	 * @return the message (could be <code>null</code>).
+	 */
+	def getMessage : String
+	/** Replies the width of the world.
+	 * 
+	 * @return the width.
+	 */
+	def getWorldWidth : float
+
+	/** Replies the height of the world.
+	 * 
+	 * @return the height.
+	 */
+	def getWorldHeight : float
+
+	/** Replies the last environment state.
+	 * 
+	 * @return the last environment state.
+	 */
+	def getLastWorldState : WorldModelState
+
+	/** Convert the coordinates in the MAS into the equivalent coordinates on the screen.
+	 * 
+	 * @param p the coordinates
+	 * @return the coordinates on the screen.
+	 */
+	def mas2screen(p : Point2f) : Point2f
+
+	/** Convert the vector in the MAS into the equivalent vector on the screen.
+	 * 
+	 * @param v the vector
+	 * @return the vector on the screen.
+	 */
+	def mas2screen(p : Vector2f) : Vector2f
+
+	/** Convert the size in the MAS into the equivalent size on the screen.
+	 * 
+	 * @param size the size
+	 * @return the size on the screen.
+	 */
+	def mas2screen(size : float) : float
+
+	/** Convert the point from the screen coordinate to the MAS coordinate.
+	 * 
+	 * @param point the point on the screen.
+	 * @return the point in the MAS
+	 */
+	def screen2mas(point : Point2f) : Point2f
+
+	/** Convert the given MAS shape to the equivalent AWT shape.
+	 * 
+	 * @param shape the MAS shape
+	 * @return the AWT shape.
+	 */
+	def mas2screen(shape : Shape2f<?>) : Shape
+
+	/** Paint the world */
+	def paintWorld(g : Graphics2D)
+
+	/** Paint the coordinate system axes.
+	 */
+	def paintAxes(g : Graphics2D)
+	/** Paint an agent body.
+	 * 
+	 * @param g2d the graphical context in which is must be drawn.
+	 * @param positionOnScreen the position of the object on the screen.
+	 * @param orientationOnScreen the orientation of the body on the screen.
+	 * @param shape the shape of the body on the screen.
+	 * @param type the type of the body.
+	 * @param name the name of the body (could be <code>null</code>).
+	 * @param positionInMas the position of the body in the MAS.
+	 * @param frustum the frustum.
+	 */
+	def paintAgentBody(g2d : Graphics2D, positionOnScreen : Point2f, orientationOnScreen : Vector2f,
+		shape : Shape, type : Serializable, name : String, positionInMas : Point2f, frustum : Shape)
+
+	/** Paint a situated object.
+	 * 
+	 * @param g2d the graphical context in which is must be drawn.
+	 * @param positionOnScreen the position of the object on the screen.
+	 * @param orientationOnScreen the orientation of the body on the screen.
+	 * @param shape the shape of the body on the screen.
+	 * @param type the type of the object.
+	 * @param name the name of the body (could be <code>null</code>).
+	 * @param positionInMas the position of the body in the MAS.
+	 */
+	def paintSituatedObject(g2d : Graphics2D, positionOnScreen : Point2f,
+		orientationOnScreen : Vector2f, shape : Shape, type : Serializable, name : String, positionInMas : Point2f)
+
+	/** Change the mouse target.
+	 * 
+	 * @param screenPosition the position of the target on the screen
+	 */
+	def setMouseTargetOnScreen(screenPosition : Point2f)
+
+}

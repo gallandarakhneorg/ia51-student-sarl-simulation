@@ -1,0 +1,334 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.framework.gui
+
+import fr.utbm.info.ia51.framework.FrameworkLauncher
+import fr.utbm.info.ia51.framework.environment.EnvironmentEvent
+import fr.utbm.info.ia51.framework.environment.WorldModelState
+import fr.utbm.info.ia51.framework.math.Circle2f
+import fr.utbm.info.ia51.framework.math.Point2f
+import fr.utbm.info.ia51.framework.math.Rectangle2f
+import fr.utbm.info.ia51.framework.math.Shape2f
+import fr.utbm.info.ia51.framework.math.Vector2f
+import fr.utbm.info.ia51.framework.time.TimeManager
+import fr.utbm.info.ia51.framework.util.LocalizedString
+import java.awt.BorderLayout
+import java.awt.Dimension
+import java.awt.Graphics2D
+import java.awt.GridLayout
+import java.awt.Shape
+import java.awt.^event.WindowAdapter
+import java.awt.^event.WindowEvent
+import java.awt.geom.Ellipse2D
+import java.awt.geom.GeneralPath
+import java.awt.geom.Rectangle2D
+import java.net.URL
+import javax.swing.ImageIcon
+import javax.swing.JButton
+import javax.swing.JComponent
+import javax.swing.JFrame
+import javax.swing.JLabel
+import javax.swing.JPanel
+import javax.swing.JScrollPane
+import javax.swing.JSlider
+import javax.swing.WindowConstants
+
+/** Abstract implementation of a GUI for the agent framework.
+ *
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+abstract class AbstractFrameworkGUI extends JFrame implements FrameworkGUI {
+
+	static val WAITING_FACTOR = 2
+	static val WAITING_MIN = 0
+	static val WAITING_MAX = 20
+	
+	val worldWidth : float
+	val worldHeight : float
+	val timeManager : TimeManager
+
+	var lastState : WorldModelState
+	var environment : WorldModelStateProvider
+
+	val scroll : JScrollPane 
+	val messageBox : JLabel
+	val speedSlider : JSlider 
+
+	private static def time2slider(delay : float) : int {
+		(WAITING_MAX - WAITING_MIN - delay / WAITING_FACTOR) as int		
+	}
+
+	private static def slider2time(value : int) : float {
+		(WAITING_MAX - WAITING_MIN - value) * WAITING_FACTOR;
+	}
+
+	/**
+	 * @param title
+	 * @param worldWidth
+	 * @param worldHeight
+	 * @param frameIcon
+	 * @param timeManager
+	 */
+	new(title : String, worldWidth : float, worldHeight : float, frameIcon : URL, timeManager : TimeManager) {
+		this.title = title
+		var icon = new ImageIcon(frameIcon)
+		this.iconImage = icon.image
+		var content = this.contentPane
+
+		content.layout = new BorderLayout
+
+		var world = new WorldPanel(this, isMouseCursorHidden)
+		this.worldWidth = worldWidth
+		this.worldHeight = worldHeight
+		this.timeManager = timeManager
+
+		this.scroll = new JScrollPane(world)
+		content.add(BorderLayout::CENTER, scroll)
+
+		var closeBt = new JButton(LocalizedString::getString(this.class, "QUIT")) //$NON-NLS-1$
+		closeBt.addActionListener [
+			FrameworkLauncher::stopSimulation
+		]
+		
+		this.speedSlider = new JSlider(JSlider::HORIZONTAL)
+		this.speedSlider.toolTipText = LocalizedString::getString(this.class, "SLIDER_LABEL");
+		this.speedSlider.minimum = WAITING_MIN
+		this.speedSlider.maximum = WAITING_MAX
+		this.speedSlider.value = timeManager.simulationDelay.time2slider
+		this.speedSlider.addChangeListener [
+			this.timeManager.simulationDelay = this.speedSlider.value.slider2time
+		]
+
+		this.messageBox = new JLabel
+
+		content.add(BorderLayout::SOUTH, createBottomPanel(this.speedSlider, closeBt, this.messageBox))
+
+		world.preferredSize = new Dimension(worldWidth as int, worldHeight as int)
+
+		addWindowListener(new WindowAdapter {
+			override windowClosing(e : WindowEvent) {
+				FrameworkLauncher.stopSimulation
+			}
+		})
+
+		var mouseAdapter = new FrameworkMouseAdapter(this)
+		world.addMouseMotionListener(mouseAdapter)
+		world.addMouseListener(mouseAdapter)
+
+		this.defaultCloseOperation = WindowConstants::DISPOSE_ON_CLOSE
+
+		pack
+
+		var d = getSize
+		setLocation(-d.width / 2, -d.height / 2)
+		this.locationRelativeTo = null
+	}
+	
+	/** Replies if the mouse cursor must be hidden or not.
+	 * 
+	 * @return <code>true</code> to hide the cursor, <code>false</code> to show.
+	 */
+	protected abstract def isMouseCursorHidden : boolean
+	
+	override setMessage(message : String) {
+		this.messageBox.text = message
+	}
+
+	override getMessage : String {
+		this.messageBox.text
+	}
+
+	/** Create the bottom panel.
+	 * 
+	 * @param speedSlider the slider for changing the simulation speed.
+	 * @param closeButton the close button.
+	 * @param messageBox the box for messages.
+	 * @return the bottom panel.
+	 */
+	protected def createBottomPanel(speedSlider : JSlider, closeButton : JComponent,
+			messageBox : JComponent) : JComponent {
+		var bottomPanel = new JPanel
+		bottomPanel.layout = new GridLayout(3, 1)
+		bottomPanel.add(speedSlider)
+		bottomPanel.add(closeButton)
+		bottomPanel.add(messageBox);
+		return bottomPanel
+	}
+
+	override environmentChanged(^event : EnvironmentEvent) {
+		synchronized(treeLock) {
+			if (this.environment === null) {
+				this.environment = ^event.stateProvider
+			}
+			this.lastState = this.environment.state
+			repaint
+		}
+	}
+
+	override setMouseTargetOnScreen(screenPosition : Point2f) {
+		synchronized(treeLock) {
+			var masPosition = screenPosition.screen2mas
+			if (this.environment !== null) {
+				this.environment.mouseTarget = masPosition
+			}
+			this.message = if (masPosition === null) null else 
+				LocalizedString.getString(this.class, "TARGET_POSITION", masPosition.x, masPosition.y)
+		}
+	}
+
+	/**
+	 * @param masPosition the position of the target in the MAS
+	 */
+	protected def setMouseTargetInMAS(masPosition : Point2f) {
+		synchronized(treeLock) {
+			if (this.environment !== null) {
+				this.environment.mouseTarget = masPosition
+			}
+			this.message = if (masPosition === null) null else 
+				LocalizedString.getString(this.class, "TARGET_POSITION", masPosition.x, masPosition.y)
+		}
+	}
+
+	override getWorldWidth : float {
+		this.worldWidth
+	}
+
+	/** Replies the height of the world.
+	 * 
+	 * @return the height.
+	 */
+	override getWorldHeight : float {
+		this.worldHeight
+	}
+
+	/** Replies the last environment state.
+	 * 
+	 * @return the last environment state.
+	 */
+	override getLastWorldState : WorldModelState {
+		this.lastState
+	}
+
+	/** Convert the coordinates in the MAS into the equivalent coordinates on the screen.
+	 *
+	 * @param p the coordinates
+	 * @return the coordinates on the screen.
+ 	 */
+	override mas2screen(p : Point2f) : Point2f {
+		if (p == null) {
+			return null
+		}
+		return new Point2f(p.x, this.worldHeight - p.y)
+	}
+
+	/** Convert the vector in the MAS into the equivalent vector on the screen.
+	 *
+	 * @param v the vector
+	 * @return the vector on the screen.
+	 */
+	override mas2screen(p : Vector2f) : Vector2f {
+		if (p === null) {
+			return null
+		}
+		return new Vector2f(p.x, -p.y, true)
+	}
+
+	/** Convert the size in the MAS into the equivalent size on the screen.
+	 *
+	 * @param size the size
+	 * @return the size on the screen.
+	 */
+	override mas2screen(size : float) : float {
+		// No scaling/zooming
+		size
+	}
+
+	/** Convert the point from the screen coordinate to the MAS coordinate.
+	 *
+	 * @param point the point on the screen.
+	 * @return the point in the MAS
+	 */
+	override screen2mas(point : Point2f) : Point2f {
+		if (point === null) {
+			return null
+		}
+		return new Point2f(
+				point.x,
+				this.worldHeight - point.y)
+	}
+
+	/** Convert the given MAS shape to the equivalent AWT shape.
+	 *
+	 * @param shape the MAS shape
+	 * @return the AWT shape.
+	 */
+	override mas2screen(shape : Shape2f<?>) : Shape {
+		if (shape === null) {
+			return null
+		}
+		if (shape instanceof Circle2f) {
+			var p = shape.center.mas2screen
+			var radius = shape.radius.mas2screen
+			return new Ellipse2D.Float(
+					p.x - radius,
+					p.y - radius,
+					2f * radius,
+					2f * radius)
+		}
+		if (shape instanceof Rectangle2f) {
+			var l = shape.lower.mas2screen
+			var u = shape.upper.mas2screen
+			return new Rectangle2D.Float(
+					Math::min(l.x, u.x) as float,
+					Math::min(l.y, u.y) as float,
+					shape.width.mas2screen,
+					shape.height.mas2screen)
+		}
+		throw new IllegalArgumentException
+	}
+
+	override paintWorld(g2d : Graphics2D) {
+		//
+	}
+
+	override paintAxes(g2d : Graphics2D) {
+		var dim = this.scroll.viewport.viewSize
+		g2d.setColor(g2d.getBackground().darker());
+		//
+		var p = new GeneralPath
+		p.moveTo(19, dim.height as float - 5)
+		p.lineTo(22, dim.height as float - 2)
+		p.lineTo(2, dim.height as float - 2)
+		p.lineTo(2, dim.height as float - 22)
+		p.lineTo(5, dim.height as float - 19)
+		//
+		g2d.draw(p)
+		//
+		var oldFont = g2d.font
+		var f = oldFont.deriveFont(6)
+		g2d.font = f
+		g2d.drawString("x", 24, dim.height as float - 1)
+		g2d.drawString("y", 1, dim.height as float - 25)
+		g2d.font = oldFont
+	}
+
+}

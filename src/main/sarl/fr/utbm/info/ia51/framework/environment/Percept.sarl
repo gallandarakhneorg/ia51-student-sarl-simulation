@@ -1,0 +1,202 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.framework.environment
+
+import java.io.Serializable
+import java.util.UUID
+
+import com.google.common.base.Objects
+
+import fr.utbm.info.ia51.framework.math.Point2f
+import fr.utbm.info.ia51.framework.math.Shape2f
+import fr.utbm.info.ia51.framework.math.Vector2f
+
+/**
+ * Defined a perception unit.
+ * 
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+class Percept implements MobileObject, Serializable {
+
+	val bodyId : UUID
+	val objectId : UUID
+	var shape : Shape2f<?> 
+	var position : Point2f
+	val angle : float
+	val type : Serializable
+	val maxLinearSpeed : float 
+	val maxLinearAcceleration : float 
+	var currentLinearMotion : Vector2f 
+	var maxAngularSpeed : float
+	val maxAngularAcceleration : float 
+	val currentAngularSpeed : float
+	val name : String 
+	
+	/**
+	 * @param perceivedObject is the perceived object.
+	 */
+	new (perceivedObject : SituatedObject, type : Serializable = null) {
+		this.objectId = perceivedObject.ID
+		this.name = perceivedObject.name
+		this.shape = perceivedObject.shape
+		this.position = perceivedObject.position.clone
+		var rtype = type ?: perceivedObject.type
+		this.type = rtype ?: perceivedObject.class.name
+		if (perceivedObject instanceof MobileObject) {
+			this.angle = perceivedObject.angle
+			this.maxAngularAcceleration = perceivedObject.maxAngularAcceleration
+			this.maxAngularSpeed = perceivedObject.maxAngularSpeed
+			this.maxLinearAcceleration = perceivedObject.maxLinearAcceleration
+			this.maxLinearSpeed = perceivedObject.maxLinearSpeed
+			this.currentAngularSpeed = perceivedObject.currentAngularSpeed
+			this.currentLinearMotion = perceivedObject.currentLinearMotion.clone
+		} else {
+			this.angle = 0f
+			this.maxAngularAcceleration = 0f
+			this.maxAngularSpeed = 0f
+			this.maxLinearAcceleration = 0f
+			this.maxLinearSpeed = 0f
+			this.currentAngularSpeed = 0f
+			this.currentLinearMotion = null
+		}
+		if (perceivedObject instanceof AgentBody) {
+			this.bodyId = perceivedObject.ID
+		} else {
+			this.bodyId = null
+		}
+	}
+	
+	override clone : Percept {
+		var clone = super.clone as Percept
+		clone.currentLinearMotion = this.currentLinearMotion.clone
+		clone.position = this.position.clone
+		clone.shape = this.shape.clone
+		return clone
+	}
+	
+	override equals(obj : Object) : boolean {
+		if (obj instanceof Percept) {
+			return this.bodyId == obj.bodyId && this.objectId == obj.objectId
+		}
+		return false
+	}
+	
+	override hashCode : int {
+		Objects.hashCode(this.bodyId, this.objectId)
+	}
+	
+	override compareTo(o : SituatedObject) : int {
+		if (o instanceof Percept) {
+			if (this.bodyId !== null) {
+				var c = this.bodyId <=> o.ID
+				if (c != 0) {
+					return c
+				}
+			}
+			if (this.objectId !== null) {
+				return this.objectId <=> o.ID
+			}
+		}
+		return Integer::MAX_VALUE
+	}
+
+	/** Replies the id of the body.
+	 *
+	 * @return the id of the body.
+	 */
+	def getBodyID : UUID {
+		this.bodyId
+	}
+
+	/** Replies the id of the body.
+	 *
+	 * @return the id of the body.
+	 */
+	def getID : UUID {
+		this.objectId
+	}
+
+	override getShape : Shape2f<?> {
+		this.shape
+	}
+
+	override getX : float {
+		this.position.x
+	}
+
+	override getY : float {
+		this.position.y
+	}
+
+	override getPosition : Point2f {
+		this.position
+	}
+
+	override getAngle : float {
+		this.angle
+	}
+
+	override getDirection : Vector2f {
+		Vector2f::toOrientationVector(this.angle)
+	}
+
+	override getMaxLinearSpeed : float{
+		this.maxLinearSpeed
+	}
+
+	override getMaxAngularSpeed : float {
+		this.maxAngularSpeed
+	}
+
+	override getMaxLinearAcceleration : float {
+		this.maxLinearAcceleration
+	}
+
+	override getMaxAngularAcceleration : float {
+		this.maxAngularAcceleration
+	}
+
+	override getCurrentAngularSpeed : float {
+		this.currentAngularSpeed
+	}
+
+	override getCurrentLinearSpeed : float {
+		this.currentLinearMotion?.length
+	}
+
+	override getCurrentLinearMotion : Vector2f {
+		this.currentLinearMotion ?: new Vector2f
+	}
+
+	override getType : Serializable {
+		this.type
+	}
+
+	override getName : String {
+		this.name
+	}
+	
+	override toString : String {
+		if(this.name.isNullOrEmpty) super.toString() else this.name
+	}
+
+}

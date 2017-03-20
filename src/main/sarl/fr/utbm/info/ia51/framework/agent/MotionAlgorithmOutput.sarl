@@ -1,0 +1,151 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.framework.^agent
+
+import java.io.Serializable
+
+import fr.utbm.info.ia51.framework.environment.DynamicType
+import fr.utbm.info.ia51.framework.math.Vector2f
+
+/**
+ * Output of a behaviour.
+ * 
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+class MotionAlgorithmOutput implements Serializable {
+
+	val type : DynamicType 
+	val linear = new Vector2f
+	var angular = 0f
+	
+	/**
+	 * @param type is the type of the output.
+	 */
+	new (type : DynamicType) {
+		this.type = type;
+	}
+	
+	/**
+	 * @param outputToCopy is the output tp copy.
+	 */
+	new (outputToCopy : MotionAlgorithmOutput) {
+		// TODO assert(outputToCopy!=null);
+		this.type = outputToCopy.type
+		this.linear.set(outputToCopy.linear)
+		this.angular = outputToCopy.angular
+	}
+
+	/** Replies the type of the output.
+	 * 
+	 * @return the type of the output.
+	 */
+	def getType : DynamicType {
+		this.type
+	}
+	
+	/** Replies the linear output.
+	 * 
+	 * @return the linear output.
+	 */
+	def getLinear : Vector2f {
+		this.linear
+	}
+	
+	/** Replies the angular output.
+	 * 
+	 * @return the angular output.
+	 */
+	def getAngular : float {
+		this.angular
+	}
+	
+	/** Set the linear output.
+	 * 
+	 * @param linear
+	 */
+	def setLinear(linear : Vector2f) {
+		// TODO assert(linear!=null);
+		this.linear.set(linear)
+	}
+	
+	/** Set the linear output.
+	 * 
+	 * @param dx
+	 * @param dy
+	 */
+	def setLinear(dx : float, dy : float) {
+		this.linear.set(dx, dy)
+	}
+
+	/** Set the angular output.
+	 * 
+	 * @param angular
+	 */
+	def setAngular(angular : float) {
+		this.angular = angular
+	}
+
+	/** Set the linear output.
+	 * 
+	 * @param outputToCopy
+	 */
+	def setLinear(outputToCopy : MotionAlgorithmOutput) {
+		if (outputToCopy !== null) {
+			if (outputToCopy.type != this.type) {
+				throw new IllegalArgumentException
+			}
+			this.linear.set(outputToCopy.linear)
+		}
+	}
+
+	/** Set the angular output.
+	 * 
+	 * @param outputToCopy
+	 */
+	def setAngular(outputToCopy : MotionAlgorithmOutput) {
+		if (outputToCopy !== null) {
+			if (outputToCopy.type != this.type) {
+				throw new IllegalArgumentException
+			}
+			this.angular = outputToCopy.angular
+		}
+	}
+
+	/** Set the linear and angular output.
+	 * 
+	 * @param outputToCopy
+	 */
+	def set(outputToCopy : MotionAlgorithmOutput) {
+		if (outputToCopy !== null) {
+			if (outputToCopy.type != this.type) {
+				throw new IllegalArgumentException
+			}
+			this.linear.set(outputToCopy.linear)
+			this.angular = outputToCopy.angular
+		}
+	}
+	
+	override toString : String {
+		"l=" + this.linear.toString() + "; a=" + this.angular
+	}
+
+}

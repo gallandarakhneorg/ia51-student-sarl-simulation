@@ -1,0 +1,165 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.framework.math
+
+import java.lang.ref.SoftReference
+
+import com.google.common.base.Objects
+
+
+
+/** 2D Path with floating-point values.
+ *
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+class MotionHull2f extends Shape2f<MotionHull2f> {
+
+	val start = new Point2f
+	val direction = new Vector2f
+	val size : float
+	
+	var bounds : SoftReference<Rectangle2f> = null
+	
+	/**
+	 * @param point
+	 * @param vector
+	 * @param lateralSize
+	 */
+	new(point : Point2f, vector : Vector2f, lateralSize : float) {
+		this.start.set(point)
+		this.direction.set(vector)
+		this.size = lateralSize
+	}
+
+	override equals(obj : Object) : boolean {
+		if (obj instanceof MotionHull2f) {
+			return this.start == obj.start && this.direction == obj.direction
+				&& this.size == obj.size
+		}
+		return false
+	}
+	
+	override hashCode : int {
+		Objects.hashCode(this.start, this.direction, this.size)
+	}
+	
+	/** Replies a copy of the start point of this path.
+	 * 
+	 * @return the start point.
+	 */
+	def getStart : Point2f {
+		this.start.clone
+	}
+
+	/** Replies a copy of the direction of this path.
+	 * 
+	 * @return the upper point.
+	 */
+	def getDirection : Vector2f {
+		this.direction.clone
+	}
+	
+	override toString : String {
+		return "[" + this.start.toString() + "-" + this.direction.toString() + "]";
+	}
+
+	/** Replies if an intersection exists between this rectangle and the given shape.
+	 * 
+	 * @param s - the shape.
+	 * @return <code>true</code> if an intersection exists.
+	 */
+	def intersects(s : Shape2f<?>) : boolean {
+		if (s instanceof MotionHull2f) {
+			var end = this.start + this.direction
+			var end2 = s.start + s.direction
+			var d = MathUtil::distanceSegmentToSegment(this.start, end, s.start, end2)
+			return d < (this.size + s.size)
+		}
+		if (s instanceof Rectangle2f) {
+			var end = this.start + this.direction
+			var pa = new Point2f(s.lower.x, s.upper.y)
+			var pb = new Point2f(s.upper.x, s.lower.y)
+			var d1 = MathUtil::distanceSegmentToSegment(s.lower, pa, this.start, end)
+			var d2 = MathUtil::distanceSegmentToSegment(pa, s.upper, this.start, end)
+			var d3 = MathUtil::distanceSegmentToSegment(s.upper, pb, this.start, end)
+			var d4 = MathUtil::distanceSegmentToSegment(pb, s.lower, this.start, end)
+			var d = MathUtil::min(d1, d2, d3, d4)
+			return d < this.size
+		}
+		if (s instanceof Circle2f) {
+			var center = s.center
+			var end = this.start + this.direction
+			return MathUtil::distancePointToSegment(center, this.start, end) < (this.size + s.radius)
+		}
+		throw new IllegalArgumentException
+	}
+	
+	/** Replies the center point of the rectangle.
+	 * 
+	 * @return the center point.
+	 */
+	def getCenter : Point2f {
+		new Point2f(
+				this.start.x + this.direction.x / 2f,
+				this.start.y + this.direction.y / 2f)
+	}
+
+	override translate(vector : Tuple2f<?>) : MotionHull2f {
+		new MotionHull2f(new Point2f(
+				this.start.x + vector.x,
+				this.start.y + vector.y),
+				this.direction.clone,
+				this.size)
+	}
+
+	override getBounds : Rectangle2f {
+		var bb = this.bounds?.get
+		if (bb === null) {
+			var x = this.start.x + this.direction.x
+			var y = this.start.y + this.direction.y
+			var d = this.direction.clone
+			d.turn(MathUtil::PI / 2f)
+			
+			var x1 = this.start.x + d.x
+			var y1 = this.start.y + d.y
+			var x2 = this.start.x - d.x
+			var y2 = this.start.y - d.y
+			var x3 = x + d.x
+			var y3 = y + d.y
+			var x4 = x - d.x
+			var y4 = y - d.y
+			
+			bb = new Rectangle2f(
+					MathUtil::min(x1, x2, x3, x4),
+					MathUtil::min(y1, y2, y3, y4),
+					MathUtil::max(x1, x2, x3, x4),
+					MathUtil::max(y1, y2, y3, y4))
+			this.bounds = new SoftReference(bb)
+		}
+		return bb
+	}
+	
+	override getMaxDemiSize : float {
+		this.size
+	}
+
+}

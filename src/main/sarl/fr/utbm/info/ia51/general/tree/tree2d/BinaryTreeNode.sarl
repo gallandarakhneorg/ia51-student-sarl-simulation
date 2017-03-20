@@ -1,0 +1,92 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.general.tree.tree2d
+
+import fr.utbm.info.ia51.framework.environment.ShapedObject
+import fr.utbm.info.ia51.framework.math.Rectangle2f
+import fr.utbm.info.ia51.general.tree.abstracts.AbstractArraySpatialTreeNode
+import java.lang.reflect.Array
+
+/**
+ * Definition of a 2D-tree node.
+ * 
+ * @param <D> - type of the data in the node.
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+class BinaryTreeNode<D extends ShapedObject> extends AbstractArraySpatialTreeNode<BinaryTreeNode<D>, D> {
+
+	val separationLine : SeparationLine 
+	
+	/** 
+	 * @param bounds the bounds covered by the node.
+	 * @param separationLine defines the separation line for creating the children.
+	 */
+	new (bounds : Rectangle2f = null, separationLine : SeparationLine) {
+		super(bounds)
+		this.separationLine = separationLine
+	}
+
+	/** Replies the separation line to use for creating the children.
+	 *
+	 * @return the separation line.
+	 */
+	def getSeparationLine : SeparationLine {
+		this.separationLine
+	}
+	
+	/** Replies the lower or left child node.
+	 * 
+	 * @return the node.
+	 */
+	def getLowerOrLeftChild : BinaryTreeNode<D> {
+		this.children?.get(0)
+	}
+
+	/** Replies the upper or right child node.
+	 * 
+	 * @return the node.
+	 */
+	def getUpperOrRightChild : BinaryTreeNode<D> {
+		this.children?.get(1)
+	}
+
+	override createChildren {
+		if (this.children === null) {
+			this.children = Array.newInstance(BinaryTreeNode, 2) as BinaryTreeNode<D>[]
+		}
+		if (this.children.get(0) === null) {
+			var bounds = this.bounds
+			// TODO assert (bounds != null);
+			var childBounds = this.separationLine.getLowerOrLeftBounds(bounds)
+			this.children.set(0, childBounds.newNodeInstance)
+			this.children.get(0).parent = this
+		}
+		if (this.children.get(1) === null) {
+			var bounds = this.bounds
+			// TODO assert (bounds != null);
+			var childBounds = this.separationLine.getUpperOrRightBounds(bounds)
+			this.children.set(1, childBounds.newNodeInstance)
+			this.children.get(1).parent = this
+		}
+	}
+
+}

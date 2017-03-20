@@ -1,0 +1,175 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.framework.math
+
+import static extension java.lang.Math.*
+
+import com.google.common.base.Objects
+
+
+/** 2D Rectangle with floating-point values.
+ *
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+class Rectangle2f extends Shape2f<Rectangle2f> {
+
+	val lower = new Point2f
+	val upper = new Point2f
+	
+	/**
+	 */
+	new {
+	}
+
+	/**
+	 * @param p1
+	 * @param p2
+	 */
+	new(p1 : Point2f, p2 : Point2f) {
+		this.lower.set(
+				min(p1.x, p2.x),
+				min(p1.y, p2.y))
+		this.upper.set(
+				max(p1.x, p2.x),
+				max(p1.y, p2.y))
+	}
+
+	/**
+	 * @param x1
+	 * @param y1
+	 * @param x2
+	 * @param y2
+	 */
+	new(x1 : float, y1 : float, x2 : float, y2 : float) {
+		this.lower.set(
+				min(x1, x2),
+				min(y1, y2))
+		this.upper.set(
+				max(x1, x2),
+				max(y1, y2))
+	}
+
+	override equals(obj : Object) : boolean {
+		if (obj instanceof Rectangle2f) {
+			return this.lower == obj.lower && this.upper == obj.upper
+		}
+		return false
+	}
+	
+	override hashCode : int {
+		Objects.hashCode(this.lower, this.upper)
+	}
+
+	/** Replies a copy of the lower point of this rectangle.
+	 * 
+	 * @return the lower point.
+	 */
+	def getLower : Point2f {
+		this.lower.clone
+	}
+
+	/** Replies a copy of the upper point of this rectangle.
+	 * 
+	 * @return the upper point.
+	 */
+	def getUpper : Point2f {
+		this.upper.clone
+	}
+	
+	def toString : String {
+		"[" + this.lower.toString + "-" + this.upper.toString + "]"
+	}
+
+	/** Replies if an intersection exists between this rectangle and the given shape.
+	 * 
+	 * @param s - the shape.
+	 * @return <code>true</code> if an intersection exists.
+	 */
+	def intersects(s : Shape2f<?>) : boolean {
+		if (s instanceof Rectangle2f) {
+			return intersects(this.lower.x, this.upper.x, s.lower.x, s.upper.x)
+					&& intersects(this.lower.y, this.upper.y, s.lower.y, s.upper.y)
+		}
+		if (s instanceof Circle2f) {
+			var center = s.center
+			var x = MathUtil::clamp(center.x, this.lower.x, this.upper.x)
+			var y = MathUtil::clamp(center.y, this.lower.y, this.upper.y)
+			x -= center.x
+			y -= center.y
+			var radius = s.radius
+			return (x * x + y * y) < (radius * radius)
+		}
+		if (s instanceof MotionHull2f) {
+			return s.intersects(this)
+		}
+		throw new IllegalArgumentException
+	}
+	
+	private def intersects(a1 : float, a2 : float, b1 : float, b2 : float) : boolean {
+		//TODO assert (a1 <= a2);
+		//TODO assert (b1 <= b2);
+		(a2 > b1) && (b2 > a1)
+	}
+
+	/** Replies the center point of the rectangle.
+	 * 
+	 * @return the center point.
+	 */
+	def getCenter : Point2f {
+		new Point2f(
+				(this.lower.x + this.upper.x) / 2f,
+				(this.lower.y + this.upper.y) / 2f)
+	}
+
+	override translate(vector : Tuple2f<?>) : Rectangle2f {
+		new Rectangle2f(
+				this.lower.x + vector.x,
+				this.lower.y + vector.y,
+				this.upper.x + vector.x,
+				this.upper.y + vector.y)
+	}
+
+	override getBounds : Rectangle2f {
+		clone
+	}
+
+	/** Replies the width of the rectangle.
+	 *
+	 * @return the width.
+	 */
+	def getWidth : float {
+		this.upper.x - this.lower.x
+	}
+
+	/** Replies the height of the rectangle.
+	 *
+	 * @return the height.
+	 */
+	def getHeight : float {
+		this.upper.y - this.lower.y
+	}
+	
+	override getMaxDemiSize : float {
+		max(width, height) / 2f
+	}
+
+}

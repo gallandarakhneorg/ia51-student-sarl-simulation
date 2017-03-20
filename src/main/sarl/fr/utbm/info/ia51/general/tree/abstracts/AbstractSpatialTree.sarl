@@ -1,0 +1,134 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-15 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.general.tree.abstracts
+
+import fr.utbm.info.ia51.framework.environment.ShapedObject
+import fr.utbm.info.ia51.framework.math.Rectangle2f
+import fr.utbm.info.ia51.framework.math.Shape2f
+import fr.utbm.info.ia51.general.frustum.FrustumCullerTreeIterator
+import fr.utbm.info.ia51.general.tree.SpatialTree
+import fr.utbm.info.ia51.general.tree.SpatialTreeNode
+import fr.utbm.info.ia51.general.tree.SpatialTreeNodeFactory
+import fr.utbm.info.ia51.general.tree.iterator.BroadFirstTreeIterator
+import fr.utbm.info.ia51.general.tree.iterator.DepthFirstObjectTreeIterator
+import java.io.ObjectInputStream
+import java.util.Iterator
+
+/**
+ * Abstract definition of a spatial tree.
+ * 
+ * @param <N> - type of the root node.
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+abstract class AbstractSpatialTree<N extends SpatialTreeNode<N, D>, D extends ShapedObject> implements SpatialTree<N, D> {
+
+	var factory : SpatialTreeNodeFactory<N> 
+	var root : N
+	
+	/**
+	 * @param factory the node factory to use.
+	 */
+	new (factory : SpatialTreeNodeFactory<N>) {
+		//TODO assert (factory != null);
+		this.factory = factory;
+	}
+	
+	private def readObject(stream : ObjectInputStream) {
+		stream.defaultReadObject
+		for (node : this) {
+			(node as AbstractSpatialTreeNode<N, D>).tree = this as SpatialTree<N, D>
+		}
+    }
+	
+	override addData(data : D) : boolean {
+		if (data === null) {
+			return false
+		}
+		var root = getRoot
+		if (root !== null) {
+			return root.addData(data)
+		}
+		return false
+	}
+	
+	override removeData(data : D) : boolean {
+		if (data === null) {
+			return false
+		}
+		var root = getRoot
+		if (root !== null) {
+			return root.removeData(data)
+		}
+		return false
+	}
+	
+	override getBounds : Rectangle2f {
+		var root = getRoot
+		if (root === null) {
+			return new Rectangle2f
+		}
+		return root.bounds
+	}
+	
+	override getRoot : N {
+		this.root
+	}
+
+	def setRoot(root : N) {
+		if (this.root instanceof AbstractSpatialTreeNode<?, ?>) {
+			(this.root as AbstractSpatialTreeNode<N, D>).tree = null
+		}
+		this.root = root
+		if (this.root instanceof AbstractSpatialTreeNode<?, ?>) {
+			(this.root as AbstractSpatialTreeNode<N, D>).tree = this as SpatialTree<N, D>
+		}
+	}
+
+	override iterator : Iterator<N> {
+		new BroadFirstTreeIterator(getRoot)
+	}
+
+	override getNodeFactory : SpatialTreeNodeFactory<N> {
+		this.factory
+	}
+	
+	override setNodeFactory(factory : SpatialTreeNodeFactory<N>) {
+		this.factory = factory
+	}
+
+	override initialize(worldSize : Rectangle2f) {
+		this.root = this.nodeFactory.newInstance(worldSize, null)
+	}
+
+	override dataIterator : Iterator<D> {
+		new DepthFirstObjectTreeIterator(getRoot)
+	}
+	
+	override dataIterator(bounds : Shape2f<?>) : Iterator<D> {
+		new FrustumCullerTreeIterator(getRoot, bounds)
+	}
+
+	override getData : Iterable<D> {
+		[ dataIterator ]
+	}
+
+}

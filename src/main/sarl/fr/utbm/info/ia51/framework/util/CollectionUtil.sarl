@@ -1,0 +1,109 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.framework.util
+
+import java.util.Iterator
+import java.util.NoSuchElementException
+
+
+/** Utilities on collections.
+ * 
+ * @author $Author: galland$
+ * @version $FullVersion$
+ * @mavengroupid $GroupId$
+ * @mavenartifactid $ArtifactId$
+ */
+final class CollectionUtil {
+
+	/** Create an iterable with the given elements.
+	 *
+	 * @param iterable - elements.
+	 * @param objects - elements.
+	 * @return the iterable.
+	 */
+	static def <T> newIterable(iterable : Iterable<? extends T>, objects : T*) : Iterable<T> {
+		new Iterable1(iterable, objects)
+	}
+
+	/**
+	 * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+	 * @version $Name$ $Revision$ $Date$
+	 */
+	private static class Iterable1<T> implements Iterable<T> {
+
+		val iterable : Iterable<? extends T>
+		val objects : T[]
+
+		/**
+		 * @param iterable - elements.
+		 * @param objects - elements.
+		 */
+		new(iterable : Iterable<? extends T>, objects : T*) {
+			this.iterable = iterable
+			this.objects = objects
+		}
+
+		override iterator : Iterator<T> {
+			new Iterator1(iterable, objects)
+		}
+
+		/**
+		 * @author $Author: galland$
+		 * @version $FullVersion$
+		 * @mavengroupid $GroupId$
+		 * @mavenartifactid $ArtifactId$
+		 */
+		private static class Iterator1<T> implements Iterator<T> {
+
+			val iterator : Iterator<? extends T>
+			val objects : T[]
+			var index = 0
+
+			/**
+			 * @param iterable - elements.
+			 * @param objects - elements.
+			 */
+			new(iterable : Iterable<? extends T>, objects : T*) {
+				this.iterator = iterable.iterator
+				this.objects = objects
+			}
+
+			override hasNext() : boolean {
+				this.iterator.hasNext || this.index < this.objects.length
+			}
+
+			override next : T {
+				if (this.iterator.hasNext) {
+					return this.iterator.next
+				}
+				if (this.index < this.objects.length) {
+					var n = this.objects.get(this.index)
+					this.index++
+					return n
+				}
+				throw new NoSuchElementException
+			}
+
+		}
+
+	}
+
+}

@@ -1,0 +1,333 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2015-17 Stephane GALLAND.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.labwork1.environment.^agent
+
+import fr.utbm.info.ia51.framework.math.Point2i
+import fr.utbm.info.ia51.labwork1.environment.maze.AgentBody
+import fr.utbm.info.ia51.labwork1.environment.maze.Direction
+import fr.utbm.info.ia51.labwork1.environment.maze.GhostBody
+import fr.utbm.info.ia51.labwork1.environment.maze.Maze
+import fr.utbm.info.ia51.labwork1.environment.maze.PacmanBody
+import fr.utbm.info.ia51.labwork1.environment.maze.PacmanObject
+import fr.utbm.info.ia51.labwork1.environment.maze.PillObject
+import fr.utbm.info.ia51.labwork1.environment.maze.SuperPowerAccessor
+import io.sarl.core.Behaviors
+import io.sarl.core.DefaultContextInteractions
+import io.sarl.core.Lifecycle
+import io.sarl.lang.core.Address
+import java.util.BitSet
+import java.util.List
+import java.util.Map
+import java.util.Random
+import java.util.TreeMap
+import java.util.UUID
+
+/** Capacity to manage a maze.
+ * 
+ * @author $Author: sgalland$
+ * @version $FullVersion$
+ * @mavengroupid $GroupId$
+ * @mavenartifactid $ArtifactId$
+ */
+capacity MazeManager {
+	
+	/** Replies the number of bodies in the maze */
+	def getBodyCount : int
+	
+	/** Apply the list of actions.
+	 * @return true if the pacman is dead. */
+	def applyActions(actions : List<MazeChangeQuery>) : boolean
+	
+	/** Replies the perceptions. */
+	def getPerceptions : Map<AgentBody, List<PacmanObject>>
+	
+	/** Replies the width of the maze. */
+	def getMazeWidth : int
+
+	/** Replies the height of the maze. */
+	def getMazeHeight : int
+	
+	/** Replies all the objects. */
+	def getPacmanObjects : List<PacmanObject>
+
+	/** Replies a specific body. */
+	def getAgentBody(id : UUID) : AgentBody
+	
+	/** Replies super power accessor. */
+	def getSuperPowerAccessor(id : UUID) : SuperPowerAccessor
+
+	/** Create a ghost body. */
+	def createGhost(perceptionDistance : int) : GhostBody
+
+	/** Create a pacman body. */
+	def createPacman() : PacmanBody
+
+}
+
+/** Capacity to be the front-end for the maze.
+ * 
+ * @author $Author: sgalland$
+ * @version $FullVersion$
+ * @mavengroupid $GroupId$
+ * @mavenartifactid $ArtifactId$
+ */
+capacity MazeFrontEnd {
+	
+	def sendPerception(time : int, bodyID : UUID, objects : List<PacmanObject>, position : Point2i)
+
+}
+
+/** Capacity to move in the maze.
+ * 
+ * @author $Author: sgalland$
+ * @version $FullVersion$
+ * @mavengroupid $GroupId$
+ * @mavenartifactid $ArtifactId$
+ */
+capacity MazeMotion {
+	
+	def move(direction : Direction)
+
+}
+
+/** Skill for managing a maze.
+ * 
+ * @author $Author: sgalland$
+ * @version $FullVersion$
+ * @mavengroupid $GroupId$
+ * @mavenartifactid $ArtifactId$
+ */
+skill DefaultMazeManagerSkill implements MazeManager {
+	
+	val random = new Random
+	
+	val width : int
+	val height : int
+	
+	var maze : Maze
+	
+	new (width : int, height : int) {
+		this.width = width
+		this.height = height
+	}
+	
+	def install {
+		this.maze = new Maze(this.width, this.height)
+	}
+	
+	def uninstall {
+		this.maze = null
+	}
+	
+	def getBodyCount : int {
+		this.maze.bodyCount
+	}
+	
+	def applyActions(actions : List<MazeChangeQuery>) : boolean {
+		var expectedMotions = new TreeMap
+		for (a : actions) {
+			var body = this.maze.getAgentBody(a.emitter)
+			var newPosition : Point2i
+			if (a.change !== null) {
+				newPosition = body.position + a.change.toVector
+			} else {
+				newPosition = body.position.clone
+			}
+			if (newPosition == body.position || this.maze.canMoveInside(newPosition.x, newPosition.y)) {
+				var l = expectedMotions.get(newPosition)
+				if (l === null) {
+					l = newArrayList
+					expectedMotions.put(newPosition, l)
+				}
+				l += body
+			}
+		}
+		
+		var resolvedMotions = new TreeMap
+		for (change : expectedMotions.entrySet) {
+			if (change.value.size > 1) {
+				var pacman = change.value.findFirst [ it instanceof PacmanBody ] as PacmanBody
+				if (pacman !== null && !pacman.superPacman) {
+					return true
+				}
+				var obj = change.value.get(this.random.nextInt(change.value.size))
+				resolvedMotions.put(change.key, obj)
+				for (other : change.value) {
+					var l = resolvedMotions.get(other.position)
+					if (l === null) {
+						resolvedMotions.put(other.position, other)
+					}
+				}
+			} else {
+				var obj = change.value.get(0)
+				resolvedMotions.put(change.key, obj)
+			}
+		}
+		
+		for (change : resolvedMotions.entrySet) {
+			this.maze.setObjectAt(change.value.position, null)
+			var pickedObject = this.maze.setObjectAt(change.key, change.value)
+			if (pickedObject instanceof PillObject && change.value instanceof PacmanBody) {
+				if ((pickedObject as PillObject).superPill) {
+					this.maze.getSuperPowerAccessorFor(change.value.agentId).resetSuperPower
+				}
+			}
+		}
+		
+		return false
+	}
+	
+	def getPerceptions : Map<AgentBody, List<PacmanObject>> {
+		var perceptions = new TreeMap
+		for(body : this.maze.agentBodies) {
+			
+			var percepts = newArrayList
+			var directions = new BitSet(4)
+			directions.set(0, 4, true)
+			var i = 1
+			while (!directions.empty && i <= body.perceptionDistance) {
+				for(bi : 0..3) {
+					if (directions.get(bi)) {
+						var d = (Direction::values).get(bi)
+						var v = d.toVector * i
+						var p = body.position + v
+						var obj = this.maze.getObjectAt(p.x, p.y)
+						if (obj !== null) {
+							percepts += obj
+							if (obj.occluder) {
+								directions.clear(bi)
+							}
+						}
+					}
+				}
+				i++
+			}
+			
+			perceptions.put(body, percepts)
+		}
+		return perceptions
+	}
+	
+	def getMazeHeight : int {
+		this.height
+	}
+	
+	def getMazeWidth : int {
+		this.width
+	}
+	
+	def getPacmanObjects : List<PacmanObject> {
+		var list = newArrayList
+		for (i : 0..<this.width) {
+			for (j : 0..<this.height) {
+				var o = this.maze.getObjectAt(i, j)
+				if (o !== null) {
+					list += o
+				}
+			}
+		}
+		return list
+	}
+	
+	def getAgentBody(id : UUID) : AgentBody {
+		this.maze.getAgentBody(id)
+	}
+
+	def getSuperPowerAccessor(id : UUID) : SuperPowerAccessor {
+		this.maze.getSuperPowerAccessorFor(id)
+	}
+
+	def createGhost(perceptionDistance : int) : GhostBody {
+		this.maze.createBody(typeof(GhostBody), null, perceptionDistance);
+	}
+	
+	def createPacman : PacmanBody {
+		this.maze.createBody(typeof(PacmanBody), null, 0);
+	}
+	
+}
+
+/** Skill for being the front-end of a maze.
+ * 
+ * @author $Author: sgalland$
+ * @version $FullVersion$
+ * @mavengroupid $GroupId$
+ * @mavenartifactid $ArtifactId$
+ */
+skill DefaultMazeFrontEndSkill implements MazeFrontEnd {
+	
+	uses DefaultContextInteractions, Behaviors, Lifecycle
+	
+	var defaultAddressInMazeSpace : Address
+	
+	var mazeSpace : MazeSpace
+	
+	def install {
+		var spaceId = MazeSpaceUtils.getSpaceIDInContext(defaultContext)
+		this.mazeSpace = defaultContext.getOrCreateSpaceWithSpec(typeof(MazeSpaceSpecification), spaceId, asEventListener)
+		// Ensure that the agent is the creator of the space.
+		if (mazeSpace.creatorID !== null && mazeSpace.creatorID != owner.ID) {
+			killMe
+		}
+	}
+	
+	def sendPerception(time : int, bodyID : UUID, objects : List<PacmanObject>, position : Point2i) {
+		var p = new Perception(time, bodyID, objects, position)
+		this.mazeSpace.notifyPerception(p)
+	}
+	
+}
+
+/** Default implementation of the MazeMotion capacity.
+ * 
+ * @author $Author: sgalland$
+ * @version $FullVersion$
+ * @mavengroupid $GroupId$
+ * @mavenartifactid $ArtifactId$
+ */
+skill DefaultMazeMotionSkill implements MazeMotion {
+	
+	uses DefaultContextInteractions, Behaviors
+	
+	var ^space : MazeSpace
+	
+	var binder : SkillBinder
+	
+	def install {
+		var dc = defaultContext
+		var spaceId = MazeSpaceUtils::getSpaceIDInContext(dc)
+		this.^space = dc.getSpace(spaceId)
+		while (^space === null) {
+			// wait for the creation of the space
+		}
+		this.binder = new SkillBinder(asEventListener, owner.ID)
+		this.^space.spawnBody(this.binder)
+	}
+	
+	def uninstall {
+		this.^space.killBody(this.binder)
+	}
+	
+	def move(direction : Direction) {
+		this.^space.influence(this.binder.currentTime, this.binder.ID, direction)
+	}
+
+}

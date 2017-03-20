@@ -1,0 +1,637 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.framework.math
+
+import java.io.Serializable
+
+import static extension java.lang.Math.*
+
+import com.google.common.base.Objects
+
+/** 2D tuple with 2 floating-point numbers.
+ *
+ * Copied from {@link https://github.com/gallandarakhneorg/afc/}.
+ * 
+ * @param <T> is the implementation type of the tuple.
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+abstract class Tuple2f<T extends Tuple2f<?>> implements Serializable, Cloneable, Comparable<T> {
+
+	/** x coordinate.
+	 */
+	protected var x : float
+
+	/** y coordinate.
+	 */
+	protected var y : float
+
+	/**
+	 */
+	new {
+		this.x = this.y = 0
+	}
+
+	/**
+	 * @param tuple is the tuple to copy.
+	 */
+	new (tuple : Tuple2f<?>) {
+		this.x = tuple.x
+		this.y = tuple.y
+	}
+
+	/**
+	 * @param tuple is the tuple to copy.
+	 */
+	new(tuple : int[]) {
+		this.x = tuple.get(0)
+		this.y = tuple.get(1)
+	}
+
+	/**
+	 * @param tuple is the tuple to copy.
+	 */
+	new(tuple : float[]) {
+		this.x = tuple.get(0)
+		this.y = tuple.get(1)
+	}
+	/** 
+	 * @param tuple is the tuple to copy.
+	 */
+	new(tuple : long[]) {
+		this.x = tuple.get(0)
+		this.y = tuple.get(1)
+	}
+	/** 
+	 * @param tuple is the tuple to copy.
+	 */
+	new(tuple : double[]) {
+		this.x = tuple.get(0) as float
+		this.y = tuple.get(1) as float
+	}
+
+	/** 
+	 * @param x
+	 * @param y
+	 */
+	new (x : int, y : int) {
+		this.x = x
+		this.y = y
+	}
+
+	/**
+	 * @param x
+	 * @param y
+	 */
+	new (x : float, y : float) {
+		this.x = x
+		this.y = y
+	}
+	/** 
+	 * @param x
+	 * @param y
+	 */
+	new (x : long, y : long) {
+		this.x = x
+		this.y = y
+	}
+	/** 
+	 * @param x
+	 * @param y
+	 */
+	new (x : double, y : double) {
+		this.x = x as float
+		this.y = y as float
+	}
+	/** Clone this point.
+	 * 
+	 * @return the clone.
+	 */
+	override clone : T {
+		super.clone as T
+	}
+
+	/**
+	 *  Sets each component of this tuple to its absolute value.
+	 */
+	def absolute {
+		this.x = this.x.abs
+		this.y = this.y.abs
+	}
+
+	/**
+	 *  Sets each component of the tuple parameter to its absolute
+	 *  value and places the modified values into this tuple.
+	 *  @param t   the source tuple, which will not be modified
+	 */
+	def absolute(t : T) {
+		t.set(this.x.abs, this.y.abs);
+	}
+
+	/**
+	 * Sets the value of this tuple to the sum of itself and x and y.
+	 * @param x
+	 * @param y
+	 */
+	def add(x : int, y : int) {
+		this.x += x
+		this.y += y
+	}
+
+	/**
+	 * Sets the value of this tuple to the sum of itself and x and y.
+	 * @param x
+	 * @param y
+	 */
+	def add(x : float, y : float) {
+		this.x += x
+		this.y += y
+	}
+
+	/**
+	 * Sets the x value of this tuple to the sum of itself and x.
+	 * @param x
+	 */
+	def addX(x : int) {
+		this.x += x
+	}
+
+	/**
+	 * Sets the x value of this tuple to the sum of itself and x.
+	 * @param x
+	 */
+	def addX(x : float) {
+		this.x += x
+	}
+
+	/**
+	 * Sets the y value of this tuple to the sum of itself and y.
+	 * @param y
+	 */
+	def addY(y : int) {
+		this.y += y
+	}
+
+	/**
+	 * Sets the y value of this tuple to the sum of itself and y.
+	 * @param y
+	 */
+	def addY(y : float) {
+		this.y += y
+	}
+
+	/**
+	 *  Clamps this tuple to the range [low, high].
+	 *  @param min  the lowest value in this tuple after clamping
+	 *  @param max  the highest value in this tuple after clamping
+	 */
+	def clamp(min : int, max : int) {
+		if (this.x < min) this.x = min
+		else if (this.x > max) this.x = max
+		if (this.y < min) this.y = min
+		else if (this.y > max) this.y = max
+	}
+
+	/**
+	 *  Clamps this tuple to the range [low, high].
+	 *  @param min  the lowest value in this tuple after clamping
+	 *  @param max  the highest value in this tuple after clamping
+	 */
+	def clamp(min : float, max : float) {
+		if (this.x < min) this.x = min
+		else if (this.x > max) this.x = max
+		if (this.y < min) this.y = min
+		else if (this.y > max) this.y = max
+	}
+
+	/**
+	 *  Clamps the minimum value of this tuple to the min parameter.
+	 *  @param min   the lowest value in this tuple after clamping
+	 */
+	def clampMin(min : int) {
+		if (this.x < min) this.x = min
+		if (this.y < min) this.y = min
+	}
+
+	/**
+	 *  Clamps the minimum value of this tuple to the min parameter.
+	 *  @param min   the lowest value in this tuple after clamping
+	 */
+	def clampMin(min : float) {
+		if (this.x < min) this.x = min
+		if (this.y < min) this.y = min
+	}
+
+	/**
+	 *  Clamps the maximum value of this tuple to the max parameter.
+	 *  @param max   the highest value in the tuple after clamping
+	 */
+	def clampMax(max : int) {
+		if (this.x > max) this.x = max
+		if (this.y > max) this.y = max
+	}
+
+	/**
+	 *  Clamps the maximum value of this tuple to the max parameter.
+	 *  @param max   the highest value in the tuple after clamping
+	 */
+	def clampMax(max : float) {
+		if (this.x > max) this.x = max
+		if (this.y > max) this.y = max
+	}
+
+	/**
+	 * Copies the values of this tuple into the tuple t.
+	 * @param t is the target tuple
+	 */
+	def get(t : T) {
+		t.set(this.x, this.y)
+	}
+
+	/**
+	 *  Copies the value of the elements of this tuple into the array t.
+	 *  @param t the array that will contain the values of the vector
+	 */
+	def get(t : int[]) {
+		t.set(0, this.x as int)
+		t.set(1, this.y as int)
+	}
+
+	/**
+	 *  Copies the value of the elements of this tuple into the array t.
+	 *  @param t the array that will contain the values of the vector
+	 */
+	def get(t : float[]) {
+		t.set(0, this.x)
+		t.set(1, this.y)
+	}
+
+	/**
+	 * Sets the value of this tuple to the negation of tuple t1.
+	 * @param t1 the source tuple
+	 */
+	def negate(t1 : T) {
+		this.x = -t1.x
+		this.y = -t1.y
+	}
+
+	/**
+	 * Negates the value of this tuple in place.
+	 */
+	def negate() {
+		this.x = -this.x
+		this.y = -this.y
+	}
+
+	/**
+	 * Sets the value of this tuple to the scalar multiplication
+	 * of tuple t1.
+	 * @param s the scalar value
+	 * @param t1 the source tuple
+	 */
+	def scale(s : int, t1 : T) {
+		this.x = s * t1.x
+		this.y = s * t1.y
+	}
+
+	/**
+	 * Sets the value of this tuple to the scalar multiplication
+	 * of tuple t1.
+	 * @param s the scalar value
+	 * @param t1 the source tuple
+	 */
+	def scale(s : float, t1 : T) {
+		this.x = s * t1.x
+		this.y = s * t1.y
+	}
+
+	/**
+	 * Sets the value of this tuple to the scalar multiplication
+	 * of the scale factor with this.
+	 * @param s the scalar value
+	 */
+	def scale(s : int) {
+		this.x = s * this.x
+		this.y = s * this.y
+	}
+
+	/**
+	 * Sets the value of this tuple to the scalar multiplication
+	 * of the scale factor with this.
+	 * @param s the scalar value
+	 */
+	def scale(s : float) {
+		this.x = s * this.x
+		this.y = s * this.y
+	}
+
+	/**
+	 * Sets the value of this tuple to the value of tuple t1.
+	 * @param t1 the tuple to be copied
+	 */
+	def set(t1 : Tuple2f<?>) {
+		this.x = t1.x
+		this.y = t1.y
+	}
+
+	/**
+	 * Sets the value of this tuple to the specified x and y
+	 * coordinates.
+	 * @param x the x coordinate
+	 * @param y the y coordinate
+	 */
+	def set(x : int, y : int) {
+		this.x = x
+		this.y = y
+	}
+
+	/**
+	 * Sets the value of this tuple to the specified x and y
+	 * coordinates.
+	 * @param x the x coordinate
+	 * @param y the y coordinate
+	 */
+	def set(x : float, y : float) {
+		this.x = x
+		this.y = y
+	}
+
+	/**
+	 * Sets the value of this tuple from the 2 values specified in 
+	 * the array.
+	 * @param t the array of length 2 containing xy in order
+	 */
+	def set(t : int[]) {
+		this.x = t.get(0)
+		this.y = t.get(1)
+	}
+
+	/**
+	 * Sets the value of this tuple from the 2 values specified in 
+	 * the array.
+	 * @param t the array of length 2 containing xy in order
+	 */
+	def set(t : float[]) {
+		this.x = t.get(0)
+		this.y = t.get(1)
+	}
+
+	/**
+	 * Get the <i>x</i> coordinate.
+	 * 
+	 * @return the x coordinate.
+	 */
+	def getX : float {
+		this.x
+	}
+
+	/**
+	 * Set the <i>x</i> coordinate.
+	 * 
+	 * @param x  value to <i>x</i> coordinate.
+	 */
+	def setX(x : int) {
+		this.x = x
+	}
+
+	/**
+	 * Set the <i>x</i> coordinate.
+	 * 
+	 * @param x  value to <i>x</i> coordinate.
+	 */
+	def setX(x : float) {
+		this.x = x
+	}
+
+	/**
+	 * Get the <i>y</i> coordinate.
+	 * 
+	 * @return  the <i>y</i> coordinate.
+	 */
+	def getY : float {
+		this.y
+	}
+
+	/**
+	 * Set the <i>y</i> coordinate.
+	 * 
+	 * @param y value to <i>y</i> coordinate.
+	 */
+	def setY(y : int) {
+		this.y = y
+	}
+
+	/**
+	 * Set the <i>y</i> coordinate.
+	 * 
+	 * @param y value to <i>y</i> coordinate.
+	 */
+	def setY(y : float) {
+		this.y = y
+	}
+
+	/**
+	 * Sets the value of this tuple to the difference of itself and x and y.
+	 * @param x
+	 * @param y
+	 */
+	def sub(x : int, y : int) {
+		this.x -= x
+		this.y -= y
+	}
+
+	/**
+	 * Sets the value of this tuple to the difference of itself and x and y.
+	 * @param x
+	 * @param y
+	 */
+	def sub(x : float, y : float) {
+		this.x -= x
+		this.y -= y
+	}
+
+	/**
+	 * Sets the x value of this tuple to the difference of itself and x.
+	 * @param x
+	 */
+	def subX(x : int) {
+		this.x -= x
+	}
+
+	/**
+	 * Sets the x value of this tuple to the difference of itself and x.
+	 * @param x
+	 */
+	def subX(x : float) {
+		this.x -= x
+	}
+
+	/**
+	 * Sets the y value of this tuple to the difference of itself and y.
+	 * @param y
+	 */
+	def subY(y : int) {
+		this.y -= y
+	}
+
+	/**
+	 * Sets the y value of this tuple to the difference of itself and y.
+	 * @param y
+	 */
+	def subY(y : float) {
+		this.y -= y
+	}
+
+	/** 
+	 *  Linearly interpolates between tuples t1 and t2 and places the 
+	 *  result into this tuple:  this = (1-alpha)*t1 + alpha*t2.
+	 *  @param t1  the first tuple
+	 *  @param t2  the second tuple
+	 *  @param alpha  the alpha interpolation parameter
+	 */
+	def interpolate(t1 : T, t2 : T, alpha : float) {
+		this.x = (1f - alpha) * t1.x + alpha * t2.x
+		this.y = (1f - alpha) * t1.y + alpha * t2.y
+	}
+
+	/**  
+	 *  Linearly interpolates between this tuple and tuple t1 and 
+	 *  places the result into this tuple:  this = (1-alpha)*this + alpha*t1.
+	 *  @param t1  the first tuple
+	 *  @param alpha  the alpha interpolation parameter  
+	 */   
+	def interpolate(t1 : T, alpha : float) {
+		this.x = (1f - alpha) * this.x + alpha * t1.x
+		this.y = (1f - alpha) * this.y + alpha * t1.y
+	}
+
+	/**   
+	 * Returns true if all of the data members of Tuple2f t1 are
+	 * equal to the corresponding data members in this Tuple2f.
+	 * @param t1  the vector with which the comparison is made
+	 * @return  true or false
+	 */  
+	def equals(t1 : Tuple2f<?>) : boolean {
+		try {
+			return this.x === t1.x && this.y === t1.y
+		}
+		catch (e2 : NullPointerException) {
+			return false
+		}
+	}
+
+	/**   
+	 * Returns true if the Object1 : T is of type Tuple2f and all of the
+	 * data members of t1 are equal to the corresponding data members in
+	 * this Tuple2f.
+	 * @param t1  the object with which the comparison is made
+	 * @return  true or false
+	 */  
+	override equals(t1 : Object) : boolean {
+		try {
+			if (t1 instanceof Tuple2f<?>) {
+				return equals(t1)
+			}
+			return false
+		}
+		catch (e : AssertionError) {
+			throw e
+		}
+		catch (e2 : Throwable) {
+			return false
+		}
+	}
+
+	/**
+	 * Returns true if the L-infinite distance between this tuple
+	 * and tuple t1 is less than or equal to the epsilon parameter, 
+	 * otherwise returns false.  The L-infinite
+	 * distance is equal to MAX[abs(x1-x2), abs(y1-y2)]. 
+	 * @param t1  the tuple to be compared to this tuple
+	 * @param epsilon  the threshold value  
+	 * @return  true or false
+	 */
+	def epsilonEquals(t1 : T, epsilon : float) : boolean {
+		var diff : float
+
+		diff = this.x - t1.x
+		if(diff.isNaN) return false
+		if ((if (diff <0f) -diff else diff) > epsilon) return false
+
+		diff = this.y - t1.y
+		if(diff.isNaN) return false
+		if ((if (diff<0f) -diff else diff) > epsilon) return false
+
+		return true
+	}
+
+	/**
+	 * Returns true if the L-infinite distance between this tuple
+	 * and the zero tuple is less than or equal to the epsilon parameter, 
+	 * otherwise returns false.  The L-infinite
+	 * distance is equal to MAX[abs(x1), abs(y1)]. 
+	 * @param epsilon  the threshold value  
+	 * @return  true or false
+	 */
+	def epsilonNul(epsilon : float) : boolean {
+		if((if (this.x < 0f) -this.x else this.x) > epsilon) return false
+		if((if (this.y < 0f) -this.y else this.y) > epsilon) return false
+		return true
+	}
+
+	/**
+	 * Returns a hash code value based on the data values in this
+	 * object.  Two different Tuple2f objects with identical data values
+	 * (i.e., Tuple2f.equals returns true) will return the same hash
+	 * code value.  Two objects with different data members may return the
+	 * same hash value, although this is not likely.
+	 * @return the integer hash code value
+	 */  
+	override hashCode : int {
+		Objects.hashCode(this.x, this.y)
+	}
+	
+	override toString : String {
+		"(" //$NON-NLS-1$
+				+this.x
+				+";" //$NON-NLS-1$
+				+this.y
+				+")"; //$NON-NLS-1$
+	}
+
+	override compareTo(o : T) : int {
+		if (o === null) {
+			return Integer::MAX_VALUE
+		}
+		var c = this.x <=> o.x
+		if (c != 0) return c
+		return this.y <=> o.y
+	}
+	
+	/** Replies if the tuple has zero coordinates.
+	 *
+	 * @return <code>true</code> if the x and y coordinates are equal to zero.
+	 */
+	def isEmpty : boolean {
+		this.x === 0f && this.y === 0f
+	}
+	
+}

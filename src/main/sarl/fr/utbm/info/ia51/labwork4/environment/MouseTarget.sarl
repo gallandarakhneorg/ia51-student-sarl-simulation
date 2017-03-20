@@ -1,0 +1,77 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.labwork4.environment
+
+import fr.utbm.info.ia51.framework.environment.AbstractMobileObject
+import fr.utbm.info.ia51.framework.math.Circle2f
+import fr.utbm.info.ia51.framework.math.MathUtil
+import fr.utbm.info.ia51.framework.math.Point2f
+import java.util.UUID
+
+/**
+ * Situated object representing the mouse position.
+ * 
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+final class MouseTarget extends AbstractMobileObject {
+
+	/**
+	 * @param x
+	 * @param y
+	 */
+	new (x : float, y : float) {
+		super(	UUID::randomUUID,
+				new Circle2f(0, 0, 5f),
+				Float::MAX_VALUE,
+				Float::MAX_VALUE,
+				x, y)
+		this.name = "Mouse Target"
+		this.type = "TARGET"
+	}
+	
+	/** Change the position of the mouse target.
+	 * 
+	 * @param newPosition
+	 * @param simulationDuration is the time during which the motion is applied.
+	 * @param worldWidth is the width of the world.
+	 * @param worldHeight is the height of the world.
+	 */
+	package def setMousePosition(newPosition : Point2f, simulationDuration : float, worldWidth : float,
+		worldHeight : float) {
+		var oldPosition = this.position
+		var oldDirection = this.direction
+		var motion = newPosition - oldPosition
+		var rotation : float
+		if (motion.epsilonNul(MathUtil::EPSILON)) {
+			rotation = 0f
+		} else {
+			rotation = oldDirection.signedAngle(motion)
+		}
+		move(motion.x, motion.y, simulationDuration, worldWidth, worldHeight)
+		rotate(rotation, simulationDuration)
+	}
+
+	override toString : String {
+		return "TARGET @ " + this.position
+	}
+	
+}

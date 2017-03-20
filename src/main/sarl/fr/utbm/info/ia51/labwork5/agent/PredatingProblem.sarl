@@ -1,0 +1,451 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.labwork5.^agent
+
+import fr.utbm.info.ia51.framework.environment.Percept
+import fr.utbm.info.ia51.framework.math.Point2f
+import fr.utbm.info.ia51.general.qlearning.DefaultQState
+import fr.utbm.info.ia51.general.qlearning.QFeedback
+import fr.utbm.info.ia51.general.qlearning.QProblem
+import java.lang.reflect.Array
+import java.util.ArrayList
+import java.util.List
+import java.util.Random
+import org.arakhne.afc.vmutil.locale.Locale
+
+/** Description of the predating problem for
+ * the QLearning algorithm.
+ * 
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+class PredatingProblem implements QProblem<DefaultQState,PredatorAction> {
+
+	static val VERY_GOOD_SCORE = 2f
+	static val GOOD_SCORE = 1f
+	static val IDDLE_SCORE = 0f
+	static val BAD_SCORE = -1f
+	static val VERY_BAD_SCORE = -2f
+	
+	val random = new Random
+	
+	/** Current state in the learning algorithm.
+	 */
+	var currentState : DefaultQState
+	
+	/** Last target encountered by the predator.
+	 */
+	var lastTargetEncountered : Percept
+	
+	val states = Array.newInstance(DefaultQState, 16) as DefaultQState[]
+	
+	/**
+	 */
+	new {
+		for(i : 0..<this.states.length) {
+			this.states.set(i, new DefaultQState(
+					i,
+					Locale::getString(PredatingProblem, "STATE_"+i))) //$NON-NLS-1$
+		}
+	}
+	
+	override clone : PredatingProblem {
+		super.clone as PredatingProblem
+	}
+
+	override getAlpha : float {
+		0.5f
+	}
+
+	override getGamma : float {
+		0.5f
+	}
+
+	override getNu : float {
+		0.5f
+	}
+
+	override getRho : float {
+		0.5f
+	}
+
+	override getAvailableActionsFor(state : DefaultQState) : List<PredatorAction> {
+		var actions = new ArrayList<PredatorAction>
+		for (type : PredatorActionType::values) {
+			actions += new PredatorAction(type)
+		}
+		actions
+	}
+
+	override getAvailableStates : List<DefaultQState> {
+		this.states
+	}
+
+	override getCurrentState : DefaultQState {
+		this.currentState
+	}
+	
+	override getRandomState : DefaultQState {
+		var idx = this.random.nextInt(this.states.length)
+		this.states.get(idx)
+	}
+
+	private def detectPrey(percepts : List<Percept>) : Percept {
+		for(p : percepts) {
+			if (p.type == "TARGET") {
+				return p
+			}
+		}
+		return null
+	}
+	
+	/** Translate a list of perceptions to the current QState.
+	 * 
+	 * @param position
+	 * @param percepts
+	 */
+	def translateCurrentState(position : Point2f, percepts : List<Percept>) {
+		this.lastTargetEncountered = percepts.detectPrey
+		if (this.lastTargetEncountered === null) {
+			this.currentState = this.states.get(0)
+			return
+		}
+
+		var vectorToPrey = this.lastTargetEncountered.position - position
+		vectorToPrey.normalize
+		
+		var zones = 0
+		var cell : int
+		
+		for(p : percepts) {
+			if (this.lastTargetEncountered != p) {
+				var vectorToPredator = p.position - this.lastTargetEncountered.position
+				vectorToPredator.normalize
+				
+				var angle = vectorToPrey.signedAngle(vectorToPredator)
+				
+				if (-Math.PI/4.0<=angle && angle<= Math.PI/4.0) {
+					cell = 1 // Back
+				}
+				else if (Math.PI/4.9<=angle && angle<=3.0*Math.PI/4.0) {
+					cell = 2 // Left
+				}
+				else if (-3.0*Math.PI/4.0<=angle && angle<=-Math.PI/4.0) {
+					cell = 4 // Right
+				}
+				else {
+					cell = 8 // On my side
+				}
+				
+				zones = zones.bitwiseOr(cell)
+				if (zones==15) {
+					// All zones contains a predator
+					this.currentState = this.states.get(zones + 1)
+					return
+				}
+			}
+		}
+		
+		this.currentState = this.states.get(zones + 1)
+	}
+	
+	/** Replies the last encountered target.
+	 * 
+	 * @return the last encountered target.
+	 */
+	def getLastEncounteredTarget : Percept {
+		this.lastTargetEncountered
+	}
+	
+	private def verygood(state : int) : QFeedback<DefaultQState> {
+		verygood(this.states.get(state))
+	}
+
+	private static def verygood(state : DefaultQState) : QFeedback<DefaultQState> {
+		new QFeedback<DefaultQState>(state, VERY_GOOD_SCORE)
+	}
+
+	private def good(state : int) : QFeedback<DefaultQState> {
+		good(this.states.get(state))
+	}
+
+	private static def good(state : DefaultQState) : QFeedback<DefaultQState> {
+		new QFeedback<DefaultQState>(state, GOOD_SCORE)
+	}
+
+	private static def noimpact(state : DefaultQState) : QFeedback<DefaultQState> {
+		new QFeedback<DefaultQState>(state, IDDLE_SCORE)
+	}
+
+	private def bad(state : int) : QFeedback<DefaultQState> {
+		bad(this.states.get(state))
+	}
+
+	private static def bad(state : DefaultQState) : QFeedback<DefaultQState> {
+		new QFeedback<DefaultQState>(state, BAD_SCORE)
+	}
+
+	private def verybad(state : int) : QFeedback<DefaultQState> {
+		verybad(this.states.get(state))
+	}
+
+	private static def verybad(state : DefaultQState) : QFeedback<DefaultQState> {
+		new QFeedback<DefaultQState>(state, VERY_BAD_SCORE)
+	}
+
+	override takeAction(state : DefaultQState, action : PredatorAction) : QFeedback<DefaultQState> {
+		// Give a feedback score for the action.
+		switch (state.toInt) {
+			case 0: { // No carrot
+				switch (action.type) {
+					case RANDOM_MOVE,
+					case WAIT:
+						return state.good
+					case MOVE_LEFT,
+					case MOVE_RIGHT,
+					case MOVE_TO_KILL_THE_PREY:
+						return state.verybad
+				}
+			}
+			case 1: { // Alone
+				switch (action.type) {
+				case MOVE_LEFT:
+					return state.verygood
+				case MOVE_RIGHT,
+				case WAIT:
+					return state.good
+				case RANDOM_MOVE:
+					return state.bad
+				case MOVE_TO_KILL_THE_PREY:
+					return state.verybad
+				}
+			}
+			case 2: { // All back
+				switch (action.type) {
+				case MOVE_LEFT:
+					// Next state should be all are on the left
+					return 3.verygood
+				case MOVE_RIGHT:
+					return 5.good
+				case WAIT:
+					return state.noimpact
+				case MOVE_TO_KILL_THE_PREY:
+					return state.verybad
+				case RANDOM_MOVE:
+					return state.bad
+				}
+			}
+			case 3: { // All left
+				switch (action.type) {
+					case MOVE_RIGHT:
+						return 2.good
+					case MOVE_LEFT:
+						return 9.bad
+					case RANDOM_MOVE:
+						return state.bad
+					case MOVE_TO_KILL_THE_PREY:
+						return state.verybad
+					case WAIT:
+						return state.noimpact
+				}
+			}
+			case 4: { // Left, and back (none on my side) 
+				switch (action.type) {
+				case MOVE_RIGHT:
+					return this.states.get(6).verygood
+				case MOVE_TO_KILL_THE_PREY:
+					return state.verybad
+				case MOVE_LEFT:
+					return 11.bad
+				case RANDOM_MOVE:
+					return state.bad
+				case WAIT:
+					return state.noimpact
+				}
+			}
+			case 5: { // All right
+				switch (action.type) {
+				case MOVE_LEFT:
+					return 3.good
+				case MOVE_TO_KILL_THE_PREY:
+					return state.verybad
+				case MOVE_RIGHT:
+					return 9.verybad
+				case RANDOM_MOVE:
+					return state.bad
+				case WAIT:
+					return state.noimpact
+				}
+			}
+			case 6: { // Right, and back (none on my side)
+				switch (action.type) {
+				case MOVE_LEFT:
+					return 4.good
+				case MOVE_TO_KILL_THE_PREY:
+					return state.verybad
+				case MOVE_RIGHT:
+					return 13.verybad
+				case RANDOM_MOVE:
+					return state.bad
+				case WAIT:
+					return state.noimpact
+				}
+			}
+			case 7: { // Left, and right (none on my side)
+				switch(action.type) {
+				case MOVE_LEFT,
+				case MOVE_RIGHT:
+					return 10.bad
+				case MOVE_TO_KILL_THE_PREY:
+					return state.verybad
+				case RANDOM_MOVE:
+					return state.bad
+				case WAIT:
+					return state.good
+				}
+			}
+			case 8: { // Left, right, and back (none on my side)
+				switch (action.type) {
+				case MOVE_TO_KILL_THE_PREY:
+					return state.verygood
+				case WAIT,
+				case RANDOM_MOVE:
+					return state.verybad
+				case MOVE_LEFT:
+					return 12.verybad
+				case MOVE_RIGHT:
+					return 14.verybad
+				}
+			}
+			case 9: { // All on my side
+				switch (action.type) {
+				case MOVE_LEFT:
+					return 5.verygood
+				case MOVE_RIGHT:
+					return 3.good
+				case MOVE_TO_KILL_THE_PREY:
+					return state.verybad
+				case WAIT,
+				case RANDOM_MOVE:
+					return state.bad
+				}
+			}
+			case 10: { // On my side, and back
+				switch(action.type) {
+				case MOVE_LEFT:
+					return 7.verygood
+				case MOVE_RIGHT:
+					return 7.good
+				case MOVE_TO_KILL_THE_PREY:
+					return state.verybad
+				case RANDOM_MOVE:
+					return state.bad
+				case WAIT:
+					return state.noimpact
+				}
+			}
+			case 11: {// On my side, and left
+				switch (action.type) {
+				case MOVE_RIGHT:
+					return 4.verygood
+				case MOVE_TO_KILL_THE_PREY:
+					return state.verybad
+				case MOVE_LEFT:
+					return 13.verybad
+				case RANDOM_MOVE:
+					return state.bad
+				case WAIT:
+					return state.noimpact
+				}
+			}
+			case 12: { // On my side, left, and back
+				switch (action.type) {
+				case MOVE_RIGHT:
+					return 8.verygood
+				case MOVE_TO_KILL_THE_PREY:
+					return state.verybad
+				case MOVE_LEFT:
+					return 15.verybad
+				case RANDOM_MOVE:
+					return state.bad
+				case WAIT:
+					return state.noimpact
+				}
+			}
+			case 13: { // On my side, and right
+				switch (action.type) {
+				case MOVE_LEFT:
+					return 6.verygood
+				case MOVE_TO_KILL_THE_PREY:
+					return state.verybad
+				case MOVE_RIGHT:
+					return 11.verybad
+				case RANDOM_MOVE:
+					return state.bad
+				case WAIT:
+					return state.noimpact
+				}
+			}
+			case 14: { // On my side, right, and back
+				switch (action.type) {
+				case MOVE_LEFT:
+					return 8.verygood
+				case MOVE_TO_KILL_THE_PREY:
+					return state.verybad
+				case MOVE_RIGHT:
+					return 15.verybad
+				case RANDOM_MOVE:
+					return state.bad
+				case WAIT:
+					return state.noimpact
+				}
+			}
+			case 15: { // On my side, right, and left
+				switch (action.type) {
+				case MOVE_LEFT:
+					return 14.verygood
+				case MOVE_RIGHT:
+					return 12.good
+				case MOVE_TO_KILL_THE_PREY,
+				case WAIT:
+					return state.verybad
+				case RANDOM_MOVE:
+					return state.bad
+				}
+			}
+			case 16: { // On my side, left, right, and back
+				switch (action.type) {
+				case MOVE_TO_KILL_THE_PREY:
+					return state.verygood
+				case MOVE_LEFT,
+				case MOVE_RIGHT,
+				case WAIT,
+				case RANDOM_MOVE:
+					return state.noimpact
+				}
+			}
+		}
+		
+		// Default: no score change nor state change.
+		return new QFeedback<DefaultQState>(state, 0f)
+	}
+	
+}

@@ -1,0 +1,173 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.general.formation
+
+import fr.utbm.info.ia51.framework.math.Point2f
+import fr.utbm.info.ia51.framework.math.Vector2f
+import fr.utbm.info.ia51.framework.util.LocalizedString
+
+/**
+ * A slot in a formation body.
+ * 
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+class FormationSlot {
+
+	val spotIndex : int
+	val globalOrientation : Vector2f 
+	val globalPosition : Point2f 
+	val relativePosition : Vector2f 
+	val relativeOrientation : Vector2f 
+	val parent : FormationSlot 
+	
+	/**
+	 * @param dx is the relative vector from the parent slot to this slot.
+	 * @param dy is the relative vector from the parent slot to this slot.
+	 * @param rotation is the relative rotation from the parent slot. 
+	 * @param parent is the parent slot.
+	 * @param spotIndex is the index of the slot in the formation body.
+	 */
+	new (dx : float, dy : float, rotation : float, parent : FormationSlot, spotIndex : int) {
+		this.spotIndex = spotIndex
+		this.globalOrientation = null
+		this.globalPosition = null
+		this.relativePosition = new Vector2f(dx, dy)
+		this.relativeOrientation = Vector2f::toOrientationVector(rotation)
+		this.parent = parent
+	}
+	
+	/**
+	 */
+	new {
+		this.spotIndex = 0
+		this.globalOrientation = Vector2f::toOrientationVector(0)
+		this.globalPosition = new Point2f
+		this.relativePosition = new Vector2f
+		this.relativeOrientation = null
+		this.parent = null
+	}
+	
+	override toString : String {
+		LocalizedString::getString(typeof(FormationSlot), "SLOT", this.spotIndex) //$NON-NLS-1$
+	}
+	
+	/** Replies the global position of this slot.
+	 * 
+	 * @return the global position of this slot.
+	 */
+	def getGlobalPosition : Point2f {
+		var pos = new Point2f
+		pos.computeGlobalPositionOrientation
+		return pos
+	}
+	
+	private def computeGlobalPositionOrientation(position : Point2f) : float {
+		if (this.parent !== null) {
+			var angle = this.parent.computeGlobalPositionOrientation(position)
+			
+			var myPosition = this.relativePosition.clone
+			myPosition.turn(angle)
+			
+			position += myPosition
+
+			return angle
+		}
+		position.set(this.globalPosition)
+		return this.globalOrientation.orientationAngle
+	}
+
+	/** Set the global position of this slot.
+	 * <p>
+	 * This function does nothing if this slot has a parent slot.
+	 * 
+	 * @param x
+	 * @param y
+	 */
+	def setGlobalPosition(x : float, y : float) {
+		if (this.parent === null) {
+			// TODO assert (this.globalPosition != null);
+			this.globalPosition.set(x,y)
+		}
+	}
+
+	/** Replies the global orientation which may be targeted by an entity
+	 * on this slot.
+	 * 
+	 * @return the global orientation targeted by the entity on the slot.
+	 */
+	def getGlobalOrientation : Vector2f {
+		if (this.parent !== null) {
+			var v = this.parent.globalOrientation
+			v.turn(this.relativeOrientation.orientationAngle)
+			return v
+		}
+		return this.globalOrientation.clone
+	}
+
+	/** Set the global orientation of this slot.
+	 * <p>
+	 * This function does nothing is this slot has a parent slot.
+	 * 
+	 * @param x
+	 * @param y
+	 */
+	package def setGlobalOrientation(x : float, y : float) {
+		if (this.parent === null) {
+			// TODO assert (this.globalOrientation != null);
+			this.globalOrientation.set(x,y)
+			this.globalOrientation.length = 1f
+		}
+	}
+
+	/** Replies the relative position from the parent slot to this slot.
+	 * 
+	 * @return the relative position.
+	 */
+	def getRelativePosition : Vector2f {
+		this.relativePosition.clone
+	}
+	
+	/** Replies the relative orientation from the parent slot to this slot.
+	 * 
+	 * @return the relative orientation
+	 */
+	def getRelativeOrientation : float {
+		this.relativeOrientation.orientationAngle
+	}
+
+	/** Replies the parent slot.
+	 *
+	 * @return the parent slot, or <code>null</code> if none.
+	 */
+	def getSpotParent : FormationSlot {
+		this.parent
+	}
+	
+	/** Replies the index of this slot in the formation body.
+	 * 
+	 * @return the index of this slot in the formation body.
+	 */
+	def getSpotIndex : int {
+		this.spotIndex
+	}
+
+}

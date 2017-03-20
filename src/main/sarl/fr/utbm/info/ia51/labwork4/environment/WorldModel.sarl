@@ -1,0 +1,397 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.labwork4.environment
+
+import fr.utbm.info.ia51.framework.environment.AbstractEnvironment
+import fr.utbm.info.ia51.framework.environment.AgentBody
+import fr.utbm.info.ia51.framework.environment.DynamicType
+import fr.utbm.info.ia51.framework.environment.Influence
+import fr.utbm.info.ia51.framework.environment.MobileObject
+import fr.utbm.info.ia51.framework.environment.MotionInfluence
+import fr.utbm.info.ia51.framework.environment.Percept
+import fr.utbm.info.ia51.framework.environment.ShapedObject
+import fr.utbm.info.ia51.framework.environment.SituatedObject
+import fr.utbm.info.ia51.framework.environment.SpatialDataStructure
+import fr.utbm.info.ia51.framework.environment.WorldModelState
+import fr.utbm.info.ia51.framework.gui.WorldModelStateProvider
+import fr.utbm.info.ia51.framework.math.Circle2f
+import fr.utbm.info.ia51.framework.math.MathUtil
+import fr.utbm.info.ia51.framework.math.MotionHull2f
+import fr.utbm.info.ia51.framework.math.Point2f
+import fr.utbm.info.ia51.framework.math.Rectangle2f
+import fr.utbm.info.ia51.framework.math.Shape2f
+import fr.utbm.info.ia51.framework.math.Vector2f
+import fr.utbm.info.ia51.framework.time.StepTimeManager
+import fr.utbm.info.ia51.framework.time.TimeManager
+import fr.utbm.info.ia51.framework.util.LocalizedString
+import fr.utbm.info.ia51.general.frustum.CircleFrustum
+import fr.utbm.info.ia51.general.influence.RemoveInfluence
+import fr.utbm.info.ia51.general.influence.TypeChangeInfluence
+import fr.utbm.info.ia51.general.tree.tree4d.QuadTree
+import fr.utbm.info.ia51.general.tree.tree4d.QuadTreeNode
+import java.util.ArrayList
+import java.util.Collection
+import java.util.Collections
+import java.util.List
+import java.util.Objects
+import java.util.UUID
+import fr.utbm.info.ia51.general.tree.iterator.LeafTreeIterator
+
+/**
+ * Model of the world.
+ * 
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+class WorldModel extends AbstractEnvironment implements WorldModelStateProvider {
+
+	static val RABBIT_SIZE = 20f
+	
+	static val PERCEPTION_RADIUS = 150f
+	
+	static val TARGET_ID = UUID::randomUUID
+
+	val dataStructure = new QuadTree<SituatedObject>
+	
+	var targetPosition : Point2f
+	var mouseTarget : MouseTarget
+
+	/**
+	 * @param width is the width of the world.
+	 * @param height is the height of the world.
+	 */
+	new (width : float, height : float) {
+		super(width, height, new StepTimeManager(500))
+		this.dataStructure.initialize(new Rectangle2f(0f, 0f, width, height))
+	}
+
+	/** Replies the spatial data-structure.
+	 * 
+	 * @return the spatial data-structure.
+	 */
+	def getSpatialDataStructure : SpatialDataStructure<SituatedObject> {
+		this.dataStructure
+	}
+
+	override getState : WorldModelState {
+		new ExtendedWorldModelState(this)
+	}
+
+	override onAgentBodyCreated(body : AgentBody) {
+		this.dataStructure.addData(body)
+	}
+
+	override onAgentBodyDestroyed(body : AgentBody) {
+		this.dataStructure.removeData(body)
+	}
+
+	override setMouseTarget(target : Point2f) {
+		synchronized (this) {
+			this.targetPosition = target?.clone
+		}
+	}
+
+	override computePerceptionsFor(^agent : AgentBody) : List<Percept> {
+		var percepts = new ArrayList<Percept>
+		var frustum = ^agent.frustum
+		if (frustum !== null) {
+			var frustumShape = frustum.toShape(^agent.position, ^agent.direction)
+			var dataIterator = this.dataStructure.dataIterator(frustumShape)
+			var filteringIterator = frustum.filter(dataIterator)
+			while (filteringIterator.hasNext) {
+				var obj = filteringIterator.next
+				percepts += new Percept(obj)
+			}
+		}
+		return percepts
+	}
+
+	override applyInfluences(motionInfluences : Collection<MotionInfluence>,
+			otherInfluences : Collection<Influence>, timeManager : TimeManager) {
+		var actionTree : QuadTree<SituatedArtifact> = new QuadTree
+		var root : QuadTreeNode<SituatedArtifact> = new QuadTreeNode(new Rectangle2f(0f, 0f, this.width, this.height))
+		actionTree.setRoot(root)
+		//
+		// Consider other influences
+		for (influence : otherInfluences) {
+			if (influence instanceof RemoveInfluence) {
+				// TODO assert (this.mouseTarget != null);
+				this.dataStructure.removeData(this.mouseTarget)
+				this.mouseTarget = null
+				stateChanged
+			} else if (influence instanceof TargetAdditionInfluence) {
+				// TODO assert (this.mouseTarget == null);
+				this.mouseTarget = new MouseTarget(influence.position.x, influence.position.y)
+				this.dataStructure.addData(this.mouseTarget)
+				stateChanged
+			} else if (influence instanceof TeletransportInfluence) {
+				// TODO assert (this.mouseTarget != null);
+				this.dataStructure.removeData(this.mouseTarget)
+				this.mouseTarget.setMousePosition(influence.position,
+						this.timeManager.lastStepDuration,
+						this.width, this.height)
+				this.dataStructure.addData(this.mouseTarget)
+				stateChanged
+			} else if (influence instanceof TypeChangeInfluence) {
+				var id = influence.influencedObject
+				if (id === null) {
+					id = influence.emitter
+				}
+				if (id !== null) {
+					var body = getAgentBodyFor(id)
+					if (body !== null) {
+						body.type = influence.type
+					}
+				}
+				stateChanged
+			}
+		}
+		//
+		// Put the influences in a spatial tree
+		for (mi : motionInfluences) {
+			var id = mi.influencedObject
+			if (id === null) {
+				id = mi.emitter
+			}
+			var body = getAgentBodyFor(id)
+
+			var linearMotion : Vector2f
+			var angularMotion : float
+			if (mi.type === DynamicType.KINEMATIC) {
+				linearMotion = body.computeKinematicTranslation(mi.linearInfluence, this.timeManager)
+				angularMotion = body.computeKinematicRotation(mi.angularInfluence, this.timeManager)
+			} else {
+				linearMotion = body.computeSteeringTranslation(mi.linearInfluence, this.timeManager)
+				angularMotion = body.computeSteeringRotation(mi.angularInfluence, this.timeManager)
+			}
+
+			actionTree.addData(new SituatedArtifact(body, linearMotion, angularMotion))
+		}
+
+		//
+		// Detect conflicts
+		actionTree.detectConflicts
+		
+		//
+		// Apply Actions
+		for (action : actionTree.data) {
+			var obj = action.object
+			if (!action.empty && obj !== null) {
+				var b = this.dataStructure.removeData(obj)
+				// TODO assert (b) : "Object cannot be removed from quadtree: " + obj;
+				obj.move(action.linearMotion, action.angularMotion)
+				b = this.dataStructure.addData(obj)
+				// TODO assert (b) : "Object cannot be added in quadtree: " + obj;
+			}
+		}
+	}
+
+	private def detectConflicts(actionTree : QuadTree<SituatedArtifact>) {
+		var iterator = new LeafTreeIterator(actionTree.root)
+		while (iterator.hasNext) {
+			var node = iterator.next
+			var influences : List<SituatedArtifact> = new ArrayList
+			do {
+				influences += node.data
+				node = node.parent
+			} while (node !== null)
+			for (i : 0..<influences.size) {
+				var inf1 = influences.get(i)
+				if (!inf1.isEmpty) {
+					var s1 = inf1.shape
+					for (obj : this.allObjects) {
+						if ((!(obj instanceof AgentBody)) && (s1.intersects(obj.shape))) {
+							inf1.clear
+							return
+						}
+					}
+					if (!inf1.empty && i < influences.size - 1) {
+						for (j : (i + 1)..<influences.size) {
+							var inf2 = influences.get(j)
+							if (!inf2.empty) {
+								if (s1.intersects(inf2.shape)) {
+									inf2.clear
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	override getAllObjects : Iterable<SituatedObject>  {
+		this.dataStructure.getData
+	}
+
+	override computeEndogenousBehaviorInfluences : List<Influence> {
+		var target : Point2f
+		synchronized (this) {
+			target = this.targetPosition
+		}
+		var influence : Influence
+		if (target === null) {
+			if (this.mouseTarget === null) {
+				return emptyList
+			}
+			influence = new RemoveInfluence(TARGET_ID)
+		} else if (this.mouseTarget !== null) {
+			influence = new TeletransportInfluence(TARGET_ID, target)
+		} else {
+			influence = new TargetAdditionInfluence(TARGET_ID, target)
+		}
+		return Collections::singletonList(influence)
+	}
+
+	/** Create the body of a rabbit.
+	 */
+	def createRabbit {
+		var id = UUID::randomUUID
+		var body = new AgentBody(
+				id,
+				new Circle2f(0f, 0f, RABBIT_SIZE), // body
+				5f,						// max linear speed m/s
+				0.5f,						// max linear acceleration (m/s)/s
+				MathUtil.PI/4f,				// max angular speed r/s
+				MathUtil.PI/10f,			// max angular acceleration (r/s)/s
+				new CircleFrustum(id, PERCEPTION_RADIUS))
+		body.name = LocalizedString::getString(typeof(WorldModel), "RABBIT", this.agentBodyNumber + 1)
+		addAgentBody(body, randomPosition,
+				Math::random as float * MathUtil::TWO_PI)
+	}
+
+	protected def randomPosition : Point2f {
+		var x = Math::random as float * this.width - RABBIT_SIZE
+		var y = Math.random as float * this.height - RABBIT_SIZE
+		return new Point2f(x, y)
+	}
+
+	/**
+	 * Real action to apply in the world.
+	 * 
+	 * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+	 * @version $Name$ $Revision$ $Date$
+	 */
+	private static class SituatedArtifact implements ShapedObject, Comparable<SituatedArtifact> {
+
+		val object : MobileObject
+		val linearMotion : Vector2f
+		val angularMotion : float
+		val shape : MotionHull2f
+		var cleared : boolean
+		
+		/**
+		 * @param object
+		 * @param linearMotion
+		 * @param angularMotion
+		 */
+		new (object : SituatedObject, linearMotion : Vector2f, angularMotion : float ) {
+			this.object = if (object instanceof MobileObject) object as MobileObject else null
+			this.linearMotion = linearMotion
+			this.angularMotion = angularMotion
+			this.shape = new MotionHull2f(object.position, linearMotion, object.shape.maxDemiSize)
+		}
+		
+		override equals(obj : Object) : boolean {
+			if (obj instanceof SituatedArtifact) {
+				return this.object == obj.object
+					&& this.linearMotion == obj.linearMotion
+					&& this.angularMotion == obj.angularMotion
+			}
+			return false
+		}
+		
+		override hashCode : int {
+			Objects::hash(this.object, this.linearMotion, this.angularMotion)
+		}
+		
+		override compareTo(o : SituatedArtifact) : int {
+			if (o === this) {
+				return 0
+			}
+			if (o === null) {
+				return Integer::MAX_VALUE
+			}
+			var c : int
+			if (this.object !== null) {
+				c = this.object.compareTo(o.object)
+				if (c !== 0) {
+					return c
+				}
+			}
+			if (this.linearMotion !== null) {
+				c = this.linearMotion.compareTo(o.linearMotion)
+				if (c !== 0) {
+					return c
+				}
+			}
+			return Float::compare(this.angularMotion, o.angularMotion)
+		}
+		
+		/** Replies the object to move.
+		 *
+		 * @return the object to move.
+		 */
+		def getObject : MobileObject {
+			this.object
+		}
+		
+		/** Replies the linear motion.
+		 * 
+		 * @return the linear motion.
+		 */
+		def getLinearMotion : Vector2f {
+			this.linearMotion
+		}
+
+		/** Replies the angular motion.
+		 * 
+		 * @return the angular motion.
+		 */
+		def getAngularMotion : float {
+			this.angularMotion
+		}
+
+		override getShape : Shape2f<?> {
+			this.shape.clone
+		}
+		
+		override toString : String {
+			this.linearMotion + "|" + this.angularMotion
+		}
+		
+		/** Replies if this object contains no movement definition.
+		 *
+		 * @return <code>true</code> if this object contains a movement definition.
+		 */
+		def isEmpty : boolean {
+			this.cleared
+		}
+		
+		/** Clear the movement definition.
+		 */
+		def clear {
+			this.cleared = true
+		}
+
+	}
+	
+}

@@ -1,0 +1,411 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.framework.math
+
+import static extension java.lang.Math.*
+
+import org.eclipse.xtext.xbase.lib.Inline
+import org.eclipse.xtext.xbase.lib.Pure
+
+/** 2D Vector with 2 integer values.
+ *
+ * Copied from {@link https://github.com/gallandarakhneorg/afc/}.
+ * 
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+class Vector2i extends Tuple2i<Vector2i> {
+
+	/**
+	 */
+	new {
+	}
+
+	/**
+	 * @param tuple is the tuple to copy.
+	 */
+	new (tuple : Tuple2i<?>) {
+		this(tuple, false)
+	}
+
+	/**
+	 * @param tuple is the tuple to copy.
+	 * @param normalize
+	 */
+	new (tuple : Tuple2i<?>, normalize : boolean) {
+		super(tuple)
+		if (normalize) {
+			try {
+				normalize()
+			} catch (ex : Throwable) {
+				//
+			}
+		}
+	}
+
+	/**
+	 * @param tuple is the tuple to copy.
+	 */
+	new (tuple : int[]) {
+		this(tuple, false)
+	}
+
+	/**
+	 * @param tuple is the tuple to copy.
+	 * @param normalize
+	 */
+	new (tuple : int[], normalize : boolean) {
+		super(tuple)
+		if (normalize) {
+			try {
+				normalize()
+			} catch (ex : Throwable) {
+				//
+			}
+		}
+	}
+
+	/**
+	 * @param x
+	 * @param y
+	 */
+	new (x : int, y : int) {
+		this(x, y, false)
+	}
+
+	/**
+	 * @param x
+	 * @param y
+	 * @param normalize
+	 */
+	new (x : int, y : int, normalize : boolean) {
+		super(x, y)
+		if (normalize) {
+			try {
+				normalize()
+			} catch (ex : Throwable) {
+				//
+			}
+		}
+	}
+
+	/**
+	 * Sets the value of this tuple to the sum of tuples t1 and t2.
+	 * @param t1 the first tuple
+	 * @param t2 the second tuple
+	 */
+	def add(t1 : Vector2i, t2 : Vector2i) {
+		this.x = t1.x + t2.x
+		this.y = t1.y + t2.y
+	}
+
+	/**
+	 * Sets the value of this tuple to the sum of itself and t1.
+	 * @param t1 the other tuple
+	 */
+	def add(t1 : Vector2i) {
+		this.x += t1.x
+		this.y += t1.y
+	}
+
+	/**
+	 * Sets the value of this tuple to the scalar multiplication
+	 * of tuple t1 plus tuple t2 (this = s*t1 + t2).
+	 * @param s the scalar value
+	 * @param t1 the tuple to be multipled
+	 * @param t2 the tuple to be added
+	 */
+	def scaleAdd(s : int, t1 : Vector2i, t2 : Vector2i) {
+		this.x = s * t1.x + t2.x
+		this.y = s * t1.y + t2.y
+	}
+
+	/**
+	 * Sets the value of this tuple to the scalar multiplication
+	 * of itself and then adds tuple t1 (this = s*this + t1).
+	 * @param s the scalar value
+	 * @param t1 the tuple to be added
+	 */
+	def scaleAdd(s : int, t1 : Vector2i) {
+		this.x = s * this.x + t1.x
+		this.y = s * this.y + t1.y
+	}
+
+	/**
+	 * Sets the value of this tuple to the difference
+	 * of tuples t1 and t2 (this = t1 - t2).
+	 * @param t1 the first tuple
+	 * @param t2 the second tuple
+	 */
+	def sub(t1 : Vector2i, t2 : Vector2i) {
+		this.x = t1.x - t2.x
+		this.y = t1.y - t2.y
+	}
+
+	/**
+	 * Sets the value of this tuple to the difference
+	 * of tuples t1 and t2 (this = t1 - t2).
+	 * @param t1 the first tuple
+	 * @param t2 the second tuple
+	 */
+	def sub(t1 : Point2i, t2 : Point2i) {
+		this.x = t1.x - t2.x
+		this.y = t1.y - t2.y
+	}
+
+	/**
+	 * Sets the value of this tuple to the difference
+	 * of itself and t1 (this = this - t1).
+	 * @param t1 the other tuple
+	 */
+	def sub(t1 : Vector2i) {
+		this.x -= t1.x
+		this.y -= t1.y
+	}
+
+	/**
+	 * Computes the dot product of the this vector and vector v1.
+	 * @param v1 the other vector
+	 * @return the dot product.
+	 */
+	@Pure
+	def dot(v1 : Vector2i) : float {
+		this.x * v1.x + this.y * v1.y
+	}
+
+	/** Change the coordinates of this vector to make it a perpendicular
+	 * vector to the original coordinates.
+	 */
+	def perpendicularize {
+		// Based on the cross product in 3D of (vx,vy,0)x(0,0,1), right-handed
+		//set(getY(), -getX())
+		// Based on the cross product in 3D of (vx,vy,0)x(0,0,1), left-handed
+		set(-getY(), getX())
+	}
+
+	/**  
+	 * Returns the length of this vector.
+	 * @return the length of this vector
+	 */  
+	@Pure
+	def length : float {
+		(this.x * this.x + this.y * this.y).sqrt as float
+	}
+
+	/**  
+	 * Returns the squared length of this vector.
+	 * @return the squared length of this vector
+	 */  
+	@Pure
+	def lengthSquared : float {
+		this.x * this.x + this.y * this.y
+	}
+	
+	/**  
+	 * Set the length of this vector.
+	 * @param length - the length of this vector
+	 */  
+	def setLength(length : float) {
+		if (length >= 0f) {
+			var norm : float = this.x * this.x + this.y * this.y
+			if (norm != 0f) {
+				norm = norm.sqrt as float
+				norm = length / norm
+				this.x = (this.x * norm) as int
+				this.y = (this.y * norm) as int
+			} else {
+				this.x = length as int
+				this.y = 0
+			}
+		} else {
+			this.x = this.y = 0
+		}
+	}
+
+	/**
+	 * Sets the value of this vector to the normalization of vector v1.
+	 * @param v1 the un-normalized vector
+	 */  
+	def normalize(v1 : Vector2i) {
+		var norm = 1f / v1.length
+		this.x = (v1.x * norm) as int
+		this.y = (v1.y * norm) as int
+	}
+
+	/**
+	 * Normalizes this vector in place.
+	 */  
+	def normalize {
+		var norm = 1f / (this.x * this.x + this.y * this.y).sqrt
+		this.x = (this.x * norm) as int
+		this.y = (this.y * norm) as int
+	}
+
+	/** Sum of vectors: r = this + v.
+	 * 
+	 * @param v the vector
+	 * @return the result.
+	 * @see #add(Vector2i, Vector2i)
+	 */
+	@Pure
+	def operator_plus(v : Vector2i) : Vector2i {
+		var r = new Vector2i
+		r.add(this, v)
+		return r
+	}
+
+	/** Add vector to a point: r = this + p.
+	 * 
+	 * @param p the point
+	 * @return the result.
+	 * @see Point2i#add(Point2i, Vector2i)
+	 */
+	@Pure
+	def operator_plus(p : Point2i) : Point2i {
+		var r = new Point2i
+		r.add(p, this)
+		return r
+	}
+
+	/** Sum of vectors: this += v.
+	 * It is equivalent to {@code this.add(v)}.
+	 * 
+	 * @param v the vector
+	 * @return the result.
+	 * @see #add(Vector2i)
+	 */
+	@Inline(value = "$1.add($2)")
+	def operator_add(v : Vector2i) {
+		add(v)
+	}
+
+	/** Subtract of vectors: r = this - v.
+	 * 
+	 * @param v the vector
+	 * @return the result.
+	 * @see #sub(Vector2i, Vector2i)
+	 */
+	@Pure
+	def operator_minus(v : Vector2i) : Vector2i {
+		var r = new Vector2i
+		r.sub(this, v)
+		return r
+	}
+
+	/** Subtract of vectors: this -= v.
+	 * It is equivalent to {@code this.sub(v)}.
+	 * 
+	 * @param v the vector
+	 * @return the result.
+	 * @see #sub(Vector2i)
+	 */
+	@Inline(value = "$1.sub($2)")
+	def operator_remove(v : Vector2i) {
+		sub(v)
+	}
+
+	/** Negation: r = -this.
+	 * It is equivalent to {@code this.negate(r)}
+	 * 
+	 * @param v the vector
+	 * @return the result.
+	 * @see #negate(Vector2i)
+	 */
+	def operator_minus : Vector2i {
+		var r = new Vector2i
+		negate(r)
+		return r
+	}
+
+	/** Dot product: r = this.v.
+	 * 
+	 * @param v the vector
+	 * @return the result.
+	 * @see #dot(Vector2i)
+	 */
+	@Pure
+	@Inline(value = "$1.dot($2)")
+	def operator_multiply(v : Vector2i) : float {
+		dot(v)
+	}
+
+	/** Scale a vector: r = this * f.
+	 * 
+	 * @param v the vector
+	 * @return the scaled vector.
+	 */
+	@Pure
+	def operator_multiply(f : int) : Vector2i {
+		var r = new Vector2i(this)
+		r.scale(f)
+		return r
+	}
+
+	/** Scale a vector: r = this / f.
+	 * 
+	 * @param v the vector
+	 * @return the scaled vector.
+	 */
+	@Pure
+	def operator_divide(f : int) : Vector2i {
+		var r = new Vector2i(this)
+		r.scale(1 / f)
+		return r
+	}
+
+	/** Replies if the vectors are equal.
+	 * 
+	 * @param v the vector.
+	 * @return test result.
+	 */
+	@Pure
+	@Inline(value = "$1.equals($2)")
+	def operator_equals(v : Vector2i) : boolean {
+		equals(v)
+	}
+
+	/** Replies if the vectors are not equal.
+	 * 
+	 * @param v the vector.
+	 * @return test result.
+	 */
+	@Pure
+	@Inline(value = "!$1.equals($2)")
+	def operator_notEquals(v : Vector2i) : boolean {
+		!equals(v)
+	}
+
+	/** If the tuple is nul then b else a.
+	 * 
+	 * @param v the vector.
+	 * @return the vector.
+	 * @see #epsilonNul(float)
+	 * @see MathUtil#EPSILON
+	 */
+	@Pure
+	def operator_elvis(v : Vector2i) : Vector2i {
+		if (epsilonNul(MathUtil.EPSILON)) {
+			return v
+		}
+		return this
+	}
+	
+}
