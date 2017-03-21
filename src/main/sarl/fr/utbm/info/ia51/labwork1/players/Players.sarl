@@ -49,11 +49,8 @@ agent Ghost {
 	var previousDirection : Direction
 
 	on Initialize {
+		// The agent learns how to move its body.
 		setSkill(new DefaultMazeMotionSkill)
-	}
-	
-	on Destroy {
-		clearSkill(typeof(MazeMotion))
 	}
 	
 	on PacManIsDead {

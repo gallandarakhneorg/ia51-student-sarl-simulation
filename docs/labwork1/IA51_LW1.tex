@@ -1,0 +1,202 @@
+%----------------------------------------
+% IT IS RECOMMENDED TO USE AUTOLATEX FOR
+% COMPILING THIS DOCUMENT.
+% http://www.arakhne.org/autolatex
+%----------------------------------------
+
+\documentclass[article,english,nodocumentinfo]{multiagentfrreport}
+
+\input{../common/preamble.tex}
+
+\declaredocument{IA51 Lab Work \#1}{Pacman Game}{UTBM-INFO-IA51-LW1}
+
+\updateversion{6.0}{\makedate{21}{03}{2017}}{Update for IA51.}{\upmpublic}
+\updateversion{5.0}{\makedate{03}{05}{2015}}{First release on Github}{\upmpublic}
+
+\gdef\skeletonName{\texttt{\mbox{LW1\_IA51\_skeleton\string.jar}}}
+
+\begin{document}
+
+\section{Goal of this Lab Work Session}
+
+The goals of this lab work session are to:
+\begin{itemize}
+\item introduce the basics concepts of agent-oriented programming with SARL, and
+\item create a simple Pacman game.
+\end{itemize}
+
+You shall learn: 
+\begin{itemize}
+\item regarding Goal 1:
+	\begin{itemize}
+	\item How to write the agent.
+	\item How to call an agent capacity.
+	\item How to spawn an agent from an agent.
+	\item How to define new capacities and skills.
+	\item How to exchange information between agents.
+	\end{itemize}
+\item regarding Goal 2:
+	\begin{itemize}
+	\item What is the basics of a agent-based simulator.
+	\item How to write the perception and action algorithms in the environment
+	\item How to write the Ghost behavior.
+	\end{itemize}
+\end{itemize}
+
+\input{../common/install}
+
+\section{Work to be Done during the Lab Work Session}
+
+The following sections describe the work to be done during this lab work session.
+
+\subsection{First Agent}
+
+First, you should write an agent that is able to display ``Hello World'' on the output console.
+
+You should:
+\begin{enumerate}[a)]
+\item create the agent type with the name \code{Agent1} (with the wizard, or by hand).
+\item create the event handler that is run when the \code{Initialize} event is received by the agent. This event is fired by the platform when the agent should initializee itself.
+\item write the output statement in the event handler.
+\end{enumerate}
+
+For running the agent, you should:
+\begin{enumerate}[a)]
+\item Open the dialog box of the ``Run Configurations''.
+\item On the left side, click on ``SARL Application''.
+\item Click on the ``New launch configuration'' button.
+\item On the right side, select the project and the agent to launch.
+\item Click on ``Run''.
+\end{enumerate}
+
+\Emph{It is recommended to put a breakpoint in the event handler, and run the agent in debug mode.}
+
+\subsection{Use the Logging Buildin Capacity}
+
+The goal of this exercise is to use a capacity that is provided by the run-time platform, aka. buildin capacity.
+
+You should:
+\begin{enumerate}[a)]
+\item update the agent code for using the ``Logging'' capacity.
+\item May anything else be changed in the code?
+\end{enumerate}
+
+\subsection{Spawning Another Agent}
+
+Most of the time, a system is composed by more than one agent. This exercise will enable you to launch another agent that is displaying ``Welcome'' on the output console also.
+
+You should:
+\begin{enumerate}[a)]
+\item create a second agent \code{Agent2}, with its \code{Initialize} event handler that is displaying the welcome message.
+\item Update the code of \code{Agent1} for using the \code{DefaultContextInteractions} buildin capacity. This capacity permits to do something with the context in which the agent is living, aka. the default context.
+\item Update the \code{Initialize} event handler of \code{Agent1} for spawning an agent of type \code{Agent2}.
+\item create a third agent \code{Agent3}, with its \code{Initialize} event handler that is displaying the welcome message.
+\item Update the \code{Initialize} event handler of \code{Agent1} for spawning an agent of type \code{Agent3}.
+\end{enumerate}
+
+\subsection{Say Hello to Every Ones}
+
+Agents are social entities. They are supposed to interact with other agents.
+This exercice enables the \code{Agent1} to say hello to the other agents.
+
+In SARL, the information exchanged between agents are carried out by events.
+The events are put inside an interaction space of a context.
+In this exercise, the default space of the default context will be used.
+It is automatically accessible when using the \code{DefaultContextInteractions} capacity.
+
+You should:
+\begin{enumerate}[a)]
+\item create the definition of the event \code{Hello}.
+\item update the code of \code{Agent1} for sending the event to every one after it has spawned the other agents.
+\item update the code of \code{Agent2} and \code{Agent3} for displaying the welcome message when they are receiving the hello event.
+\end{enumerate}
+
+\subsection{Say Hello to a Single Agent}
+
+Broadcasting events may not be the interaction mode between two agents.
+In this exercise, the \code{Hello} message will be sent only to \code{Agent3}.
+
+You should:
+\begin{enumerate}[a)]
+\item update the code of \code{Agent1} for emiting the event with a scope retricted to \code{Agent3}.
+\end{enumerate}
+
+\subsection{Say Localized Welcome}
+
+Agents may have different ways for doing a specific task.
+In this exercise, the agents will be enable to say "Hello" according to their own skills, i.e. their languages.
+
+The concepts of Capacity and Skill are suitable for this task.
+A capacity is the definition of functions (similar to an interface in object-oriented programming) that could be invoked by the agents. A capacity never defines the code of a function, only its prototype.
+A skill is a specific implementation of a capacity (similar to object implementing an interface in object-oriented programming). The skill must provide a code for each function of the implemented capacity.
+
+You should:
+\begin{enumerate}[a)]
+\item define the \code{SayHello} capacity.
+\item define the \code{SayHelloSkill} skill, that permits to say hello in English.
+\item define the \code{DireBonjourSkill} skill, that permits to say hello in French.
+\item update the code of the agents, that are defined previously, for using the \code{SayHello} capacity.
+\item update the code of the agents for calling the function provided by the \code{SayHello} capacity.
+\item update \code{Initialize} event handler of \code{Agent2} for defining its skill that is corresponding to the \code{SayHello} capacity. It should speak English.
+\item update \code{Initialize} event handler of \code{Agent3} for defining its skill that is corresponding to the \code{SayHello} capacity. It should speak French.
+\end{enumerate}
+
+\subsection{General Architecture of the Pacman Simulator}
+
+The code skeleton provides the implementation of basic simulator architecture, based on:
+\begin{itemize}
+\item The Environment is supported by a specific agent in order to benefit of the event-based communication provided by the \sarl language.
+\item The definition of the environment content is the \code{Maze} class, which is an internal attribute of the environment agent.
+\item Figure \ref{simulator:arch} shows a general overview on the architecture.
+\item Figure \ref{simulator:arch1} indicates that the environment agent computes and fires \code{Perception} events to the application agents.
+\item Figure \ref{simulator:arch2} indicates that the application agents fires \code{Influence} events to the environment agent, which is supposed to react to.
+\end{itemize}
+
+\begin{mfigures}{General Architecture of the Simulator}{simulator:arch}
+	\msubfigure{width=.4\linewidth}{arch1}{Sending perceptions to agents}
+	\hspace{1cm}
+	\msubfigure{width=.4\linewidth}{arch2}{Receiving influences from agents}
+\end{mfigures}
+
+\subsection{Environment Perceptions}
+
+In this excercise, you must define the algorithm for computing the perceptions.
+\begin{enumerate}
+\item Open the \texttt{fr/utbm/info/ia51/labwork1/environment/agent/Environment.sarl} file.
+\item Show the event handler \code{on RunBeginingOfStep}. This event is self-fired in order to start a step of the simulation loop. This function sends the perception events to the application agents.
+\item Find the function which computes the perceptions, and open it.
+\item Write the function code in the skill in order to compute the perceptions for each agent.
+\end{enumerate}
+
+\subsection{Environment Actions}
+
+In this excercise, you must define the algorithm for applying the agents' actions into the environment.
+\begin{enumerate}
+\item Open the \texttt{fr/utbm/info/ia51/labwork1/environment/agent/Environment.sarl} file.
+\item Show the event handler \code{on RunEndOfStep}. This event is self-fired in order to finish a step of the simulation loop. This function tries to applied the influences sent by the application agents.
+\item Find the function which tries to apply the influences, and open it.
+\item Write the function code in the skill in order to detect conflicts, solve them, and change the state of the grid.
+\end{enumerate}
+
+\subsection{Ghost Behavior}
+
+In this excercise, you must define the algorithm for the ghosts' behavior.
+\begin{enumerate}
+\item Open the \texttt{fr/utbm/info/ia51/labwork1/players/Players.sarl} file.
+\item Show the event handler \code{on Perception}. This event is received when the ghost agent should decide what to do.
+\item Write the function code in the event handler in order to reproduce the following behavior:
+	\begin{itemize}
+	\item If the ghost perceives the Pacman body then
+		\begin{itemize}
+		\item If the pacman body has a super-power then flee
+		\item Else pursue
+		\end{itemize}
+	\item Else
+		\begin{itemize}
+		\item If the ghost is at cross-road then select randomly a direction (the last selected direction should not be preferred).
+		\item Else move forward.
+		\end{itemize}
+	\end{itemize}
+\end{enumerate}
+
+\end{document}
