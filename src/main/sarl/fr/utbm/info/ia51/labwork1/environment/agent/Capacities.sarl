@@ -195,9 +195,14 @@ skill DefaultMazeManagerSkill implements MazeManager {
 		return false
 	}
 	
+	def in(v : int, r : IntegerRange) : boolean {
+		r.contains(v)
+	}
+	
 	def getPerceptions : Map<AgentBody, List<PacmanObject>> {
 		var perceptions = new TreeMap
-		for(body : this.maze.agentBodies) {
+		var allDirections : Direction[] = Direction::values
+		for (body : this.maze.agentBodies) {
 			
 			var percepts = newArrayList
 			var directions = new BitSet(4)
@@ -206,7 +211,7 @@ skill DefaultMazeManagerSkill implements MazeManager {
 			while (!directions.empty && i <= body.perceptionDistance) {
 				for(bi : 0..3) {
 					if (directions.get(bi)) {
-						var d = (Direction::values).get(bi)
+						var d = allDirections.get(bi)
 						var v = d.toVector * i
 						var p = body.position + v
 						var obj = this.maze.getObjectAt(p.x, p.y)

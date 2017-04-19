@@ -24,6 +24,7 @@ import java.io.Serializable
 
 /** Abstract implementation of a shape.
  *
+ * @param <S> the type instance the concrete instanceof of this Shape2f.
  * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
  * @version $Name$ $Revision$ $Date$
  */

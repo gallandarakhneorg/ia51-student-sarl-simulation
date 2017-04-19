@@ -10,11 +10,11 @@
 % character encoding (Linux and MacOS standards)
 \usepackage[utf8]{inputenc}
 \usepackage{fancyhdr}
-\usepackage{../common/sarl-listing}
+\usepackage{../common/sarl-colorized-listing}
 
 \graphicspath{{imgs/auto/},{imgs/},{../common/}}
 
-\declaredocument{VI51 Lab Work \#2}{Individual Movement Algorithms}{UTBM-INFO-VI51-LW2}
+\declaredocument{VI51 Lab Work \#2}{Environment Model}{UTBM-INFO-VI51-LW2}
 
 \addauthorvalidator*[St\'ephane Galland]{St{\'e}phane}{Galland}{Teacher}
 
@@ -31,16 +31,13 @@
 
 \section{Goal of this Lab Work Session}
 
-The goal of this lab work session is to write a set of movement algorithms for the simulation of pedestrian (rabbits).
-The work should be done in the programming languages SARL (\url{http://www.sarl.io}) and Java.
-You shall use code skeleton provided by the tearchers with the simulation framework already coded inside.
+The goal of this lab work session is to write a spatial tree for a simulation environment.
 
 You shall learn: 
 \begin{itemize}
-\item How to write a general API for the movement algorithms (of type kinematic and steering).
-\item How to extract information for the perception of an agent.
-\item How to use a movement algorithm inside the behavior function of an agent.
-\item How to influence the agent's environment with movement requests (aka. influences).
+\item How to write a general API for spatial trees.
+\item How to extract information from the tree for the agents.
+\item How to apply updates on the tree.
 \end{itemize}
 
 \input{../common/install}
@@ -66,48 +63,24 @@ The subpackages are or will be:
 
 The following sections describe the work to be done during this lab work session.
 
-\subsection{Kinematic Behavior}
+\subsection{Tree Implementation}
 
-Write the seek behavior in its kinematic version: the output of the behavior is a linear speed.
-The principle of the seek behavior is to reach a targeting point as fast as possible (see Figure \figref{seek}, page \figpageref{seek}).
+Write the \code{Tree} and \code{TreeNode} classes.
+Each node must contains a shape that represents the covered space.
+Each node may contains a list of objects.
 
-\mfigure[p]{width=.6\linewidth}{seek}{Seek Behavior, reach a target point as fast as possible}{seek}
+\subsection{Perception Iterator}
 
-\subsection{Sterring Behaviors}
+Write the \code{FrustumIterator} that replies the objects which are stored in a spatial tree and under intersection with a frustum.
 
-\subsubsection{Seek Steering Behavior}
+\subsection{Include Tree in the WorldModel}
 
-Write the seek behavior in its steering version: the output of the behavior is a linear acceleration.
-The principle of the seek behavior is to reach a targeting point as fast as possible (see Figure \figref{seek}, page \figpageref{seek}).
-
-\subsubsection{Align Steering Behavior}
-
-Write the align behavior in its steering: the output of the behavior is an angular acceleration.
-The principle of the align behavior is to turn the body for matching the body's direction to a targeted direction (see Figure \figref{align}, page \figpageref{align}).
-
-\mfigure[p]{width=.6\linewidth}{align}{Align Behavior, align to a target direction as fast as possible}{align}
-
-\subsubsection{Face Steering Behavior}
-
-Write the face behavior in its steering version: the output of the behavior is an angular acceleration.
-The principle of the face behavior is to turn the body for facing a point, i.e. the orientation of the body should point to the targeted point.
-This behavior may delegate a part of its algorithm to the align steering behavior.
-
-\subsubsection{Pursue Steering Behavior}
-
-Write the pursue behavior in its steering version: the output of the behavior is a linear acceleration.
-The principle of the pursue behavior is predict the next position of a target entity (see Figure \figref{pursue}, page \figpageref{pursue}).
-This behavior may delegate a part of its algorithm to the seek steering behavior.
-
-\mfigure[p]{width=.6\linewidth}{pursue}{Pursue Behavior, catch a target entity by predicting its next position}{pursue}
-
-\subsubsection{Wandering Steering Behavior}
-
-Write the wandering behavior in its steering version: the output of the behavior is a linear acceleration \emph{AND} an angular acceleration.
-The principle of the wandering behavior is move and turn the body randomly.
-For obtaining this result, a target point is computed on a virtual circle at the front of the entity (see Figure \figref{wander}, page \figpageref{wander}).
-The entity is seeking this target point.
-
-\mfigure[p]{width=.6\linewidth}{wander}{Wandering Behavior, move randomly}{wander}
+Update the \code{WorldModel} class:
+\begin{itemize}
+\item Add the tree in the code.
+\item Update the \code{onAgenBodyCreated} and \code{onAgentNodyDestroyed} functions.
+\item Update the \code{computePerceptionFor} function.
+\item Update the \code{applyInfluences} function.
+\end{itemize}
 
 \end{document}

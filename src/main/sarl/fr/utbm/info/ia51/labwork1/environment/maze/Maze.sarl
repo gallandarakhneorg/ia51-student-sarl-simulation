@@ -44,10 +44,6 @@ class Maze {
 	 */
 	static val MAX_SUPER_PILLS = 5
 
-	/** Max number of ghosts in the world.
-	 */
-	static val MAX_GHOSTS = 5
-
 	/** Matrix of the objects.
 	 */
 	val grid : PacmanObject[][] 

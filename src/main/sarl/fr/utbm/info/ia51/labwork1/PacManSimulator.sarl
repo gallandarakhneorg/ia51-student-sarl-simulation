@@ -65,7 +65,6 @@ class PacManSimulator {
 		var ui = new PacManGUI(WAITING_DURATION)
 		
 		Boot::startJanus(
-				null,
 				typeof(Environment),
 				WIDTH,
 				HEIGHT,

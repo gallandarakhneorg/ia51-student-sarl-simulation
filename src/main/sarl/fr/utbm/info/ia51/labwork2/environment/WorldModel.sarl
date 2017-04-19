@@ -31,6 +31,7 @@ import fr.utbm.info.ia51.framework.gui.WorldModelStateProvider
 import fr.utbm.info.ia51.framework.math.Circle2f
 import fr.utbm.info.ia51.framework.math.MathUtil
 import fr.utbm.info.ia51.framework.math.Point2f
+import fr.utbm.info.ia51.framework.math.Rectangle2f
 import fr.utbm.info.ia51.framework.math.Shape2f
 import fr.utbm.info.ia51.framework.math.Vector2f
 import fr.utbm.info.ia51.framework.time.StepTimeManager
@@ -54,12 +55,16 @@ class WorldModel extends AbstractEnvironment implements WorldModelStateProvider 
 	
 	var mouseTarget : MouseTarget
 	
+	var spatialTree : Tree<AgentBody>
+	
 	/**
 	 * @param width is the width of the world.
 	 * @param height is the height of the world.
 	 */
 	new (width : float, height : float) {
 		super(width, height, new StepTimeManager(500))
+		this.spatialTree = new Tree(
+			new Rectangle2f(0, 0, width, height))
 	}
 	
 	override setMouseTarget(target : Point2f) {
@@ -69,32 +74,14 @@ class WorldModel extends AbstractEnvironment implements WorldModelStateProvider 
 
 	override computePerceptionsFor(^agent : AgentBody) : List<Percept> {
 		var allPercepts = new ArrayList<Percept>
-		if (^agent !== null) {
-			var agentPosition = ^agent.position
-			
-			// add mouse target in perceptions
-			if (this.mouseTarget !== null) {
-				allPercepts += new Percept(this.mouseTarget)
-			}
-
-			var bestDistance = Float::MAX_VALUE
-			var nearestBody : AgentBody
-			
-			for(b1 : this.agentBodies) {
-				if (b1 != ^agent) {
-					var distance = (b1.position - agentPosition).length
-					if (distance < bestDistance) {
-						bestDistance = distance
-						nearestBody = b1
-					}
-				}
-			}
-			
-			if (nearestBody !== null) {
-				allPercepts += new Percept(nearestBody)
-			}
+		var iterator = this.spatialTree.iterator(
+			^agent.frustum,
+			^agent.position,
+			^agent.direction)
+		while (iterator.hasNext) {
+			var n = iterator.next
+			allPercepts += new Percept(n)
 		}
-		
 		return allPercepts
 	}
 
@@ -191,7 +178,7 @@ class WorldModel extends AbstractEnvironment implements WorldModelStateProvider 
 	}
 
 	override onAgentBodyCreated(body : AgentBody) {
-		//
+		this.spatialTree.add(body);
 	}
 
 	override onAgentBodyDestroyed(body : AgentBody) {
