@@ -29,22 +29,12 @@ import io.sarl.lang.core.Agent
  * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
  * @version $Name$ $Revision$ $Date$
  */
-abstract class SpawnMapping {
+interface SpawnMapping {
 
 	/** Replies the agent type for a body.
 	 * 
 	 * @return the type of a agent for the given body.
 	 */
-	abstract def getAgentTypeForBody(body : AgentBody) : Class<? extends Agent>	
-	
-	/** Replies the agent type for a body.
-	 * 
-	 * @return the type of a agent for the given body.
-	 * @see #getAgentTypeForBody(AgentBody)
-	 */
-	@Inline("getAgentTypeForBody($1)")
-	final def operator_doubleArrow(body : AgentBody) : Class<? extends Agent> {
-		return getAgentTypeForBody(body)
-	}
+	def getAgentTypeForBody(body : AgentBody) : Class<? extends Agent>	
 
 }

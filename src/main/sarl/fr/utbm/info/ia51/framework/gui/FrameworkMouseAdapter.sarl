@@ -35,7 +35,7 @@ class FrameworkMouseAdapter extends MouseAdapter {
 	val parent : WeakReference<FrameworkGUI>
 	
 	new (g : FrameworkGUI) {
-		this.parent = new WeakReference(null)
+		this.parent = new WeakReference(g)
 	}
 
 	override mouseDragged(e : MouseEvent) {

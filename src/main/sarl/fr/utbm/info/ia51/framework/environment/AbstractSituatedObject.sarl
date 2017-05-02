@@ -27,7 +27,7 @@ import com.google.common.base.Objects
 
 import fr.utbm.info.ia51.framework.math.Point2f
 import fr.utbm.info.ia51.framework.math.Shape2f
-import fr.utbm.info.ia51.framework.util.LocalizedString
+import java.text.MessageFormat
 
 /**
  * Abstract implementation of an object on the environment.
@@ -148,7 +148,8 @@ abstract class AbstractSituatedObject implements SituatedObject, Serializable {
 	 */
 	protected def setPosition(x : float, y : float) {
 		if (Double::isNaN(x) || Double::isNaN(y)) {
-			System::err.println(LocalizedString.getString(this.class, "INVALID_POSITION", this.name))
+			System::err.println(
+				MessageFormat::format("**** INVALID POSITION (NaN); object with name '{0}'.", this.name))
 		} else {
 			this.position.set(x, y)
 		}
@@ -160,7 +161,8 @@ abstract class AbstractSituatedObject implements SituatedObject, Serializable {
 	 */
 	protected def setPosition(position : Point2f) {
 		if (Double::isNaN(position.x) || Double::isNaN(position.y)) {
-			System::err.println(LocalizedString.getString(this.class, "INVALID_POSITION", this.name))
+			System::err.println(
+				MessageFormat::format("**** INVALID POSITION (NaN); object with name '{0}'.", this.name))
 		} else {
 			this.position.set(position)
 		}
@@ -174,7 +176,8 @@ abstract class AbstractSituatedObject implements SituatedObject, Serializable {
 	 */
 	protected def addPosition(x : float, y : float) {
 		if (Double::isNaN(x) || Double::isNaN(y)) {
-			System::err.println(LocalizedString.getString(this.class, "INVALID_POSITION", this.name))
+			System::err.println(
+				MessageFormat::format("**** INVALID POSITION (NaN); object with name '{0}'.", this.name))
 		} else {
 			this.position.add(x, y)
 		}

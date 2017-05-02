@@ -21,7 +21,6 @@
 package fr.utbm.info.ia51.framework.gui
 
 import fr.utbm.info.ia51.framework.environment.DynamicType
-import fr.utbm.info.ia51.framework.util.LocalizedString
 import fr.utbm.info.ia51.framework.util.Resources
 import java.awt.GridLayout
 import javax.swing.ImageIcon
@@ -51,14 +50,14 @@ class BehaviorTypeSelector extends JDialog {
 	}
 	
 	protected new{
-		this.title = LocalizedString::getString(BehaviorTypeSelector, "TITLE")
+		this.title = "Behavior Type Selection"
 		this.modal = true
 		
 		this.layout = new GridLayout(2, 1)
 
 		var imageUrl = Resources::getResource(BehaviorTypeSelector, "kinematic.png")
 		var icon = new ImageIcon(imageUrl)
-		var label = LocalizedString::getString(BehaviorTypeSelector, "KINEMATIC_BUTTON")
+		var label = "Kinematic Behavior (speed)"
 		var kinematicButton = new JButton(label, icon)
 		kinematicButton.addActionListener [
 			synchronized(this) {
@@ -70,7 +69,7 @@ class BehaviorTypeSelector extends JDialog {
 
 		imageUrl = Resources::getResource(BehaviorTypeSelector, "steering.png")
 		icon = new ImageIcon(imageUrl)
-		label = LocalizedString::getString(BehaviorTypeSelector, "STEERING_BUTTON")
+		label = "Steering Behavior (acceleration)"
 		var steeringButton = new JButton(label, icon)
 		steeringButton.addActionListener [
 			synchronized(this) {

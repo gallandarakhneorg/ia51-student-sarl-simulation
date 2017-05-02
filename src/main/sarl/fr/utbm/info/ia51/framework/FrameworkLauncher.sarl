@@ -25,15 +25,12 @@ import fr.utbm.info.ia51.framework.environment.Environment
 import fr.utbm.info.ia51.framework.environment.StopSimulation
 import fr.utbm.info.ia51.framework.gui.FrameworkGUI
 import fr.utbm.info.ia51.framework.util.SpawnMapping
-import io.janusproject.Boot
-import io.janusproject.JanusConfig
-import io.janusproject.kernel.Kernel
-import io.janusproject.services.contextspace.ContextSpaceService
-import io.janusproject.util.LoggerCreator
-import io.sarl.lang.core.Address
+import io.sarl.core.Initialize
+import io.sarl.core.Lifecycle
+import java.util.List
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.logging.Level
+import io.sarl.core.DefaultContextInteractions
 
 /**
  * Launcher of the simulation framework.
@@ -43,64 +40,62 @@ import java.util.logging.Level
  * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
  * @version $Name$ $Revision$ $Date$
  */
-public class FrameworkLauncher {
-	
-	static var environmentInteractionSpace : UUID
-	static var environmentSingleton : Environment 
-	static var uiSingleton : FrameworkGUI 
-	static var kernel : Kernel 
-	static val canStop = new AtomicBoolean(false)
+abstract agent FrameworkLauncher {
 
-	/** Launch the simulation and its associated UI.
-	 * 
-	 * @param environment is the environment to use.
-	 * @param spawnMapping the mapping from body to agent type.
-	 * @param behaviorType the type of the agent behaviors.
-	 * @param gui is the GUI to launch.
-	 * @param parameters the parameters to give to every agent.
-	 * @throws Exception if the Janus platform cannot be started.
-	 */
-	static def launchSimulation(environment : Environment, spawnMapping : SpawnMapping,
-			behaviorType : DynamicType, gui : FrameworkGUI, parameters : Object*) {
-		Boot::setOffline(true)
-		Boot::setVerboseLevel(LoggerCreator::toInt(Level::INFO))
-		Boot::showJanusLogo
-		
-		environmentInteractionSpace = UUID::randomUUID
-				
+	uses Lifecycle, DefaultContextInteractions
+
+	var uiSingleton : FrameworkGUI
+
+	var environmentSingleton : Environment
+
+	val canStop = new AtomicBoolean(false)
+
+	on Initialize {
+		if (!initializeSimulation(occurrence.parameters)) {
+			killMe
+		}
+	}
+
+	abstract def initializeSimulation(parameters : List<Object>) : boolean
+
+	final def initializeSimulation(environment : Environment,
+		behaviorType : DynamicType, gui : FrameworkGUI, parameters : List<Object>,
+		spawnMapping : SpawnMapping) : boolean {
+		var environmentInteractionSpace = UUID::randomUUID
+
 		uiSingleton = gui
 		environmentSingleton = environment
-		
-		var params = #[
-			environmentSingleton, environmentInteractionSpace,
-			spawnMapping, behaviorType
+
+		var params = <Object>newArrayList
+		params += #[
+			environmentSingleton,
+			environmentInteractionSpace,
+			spawnMapping,
+			behaviorType
 		]
-		System.arraycopy(parameters, 0, params, 4, parameters.length)
-		
-		kernel = Boot::startJanus(
-				typeof(SimulatorAgent),
-				params)
+		params += parameters
+
+		typeof(SimulatorAgent).spawn(params.toArray)
+
 		if (uiSingleton !== null) {
 			if (environmentSingleton !== null) {
 				environmentSingleton.addEnvironmentListener(uiSingleton)
 			}
+			uiSingleton.terminationHandler = [
+				stopSimulation
+			]
 			uiSingleton.visible = true
 		}
 		canStop.set(true)
+		return true
 	}
-	
-	/** Stop the simulation right now.
-	 */
-	static def stopSimulation {
-		if (!canStop.get) {
+
+	def stopSimulation {
+		if (!canStop.getAndSet(false)) {
 			throw new IllegalStateException("You must call startSimulation() before stopSimulation().")
 		}
-		var context = kernel.getService(typeof(ContextSpaceService)).getContext(
-				UUID::fromString(JanusConfig::DEFAULT_CONTEXT_ID_VALUE))
-		var ^space = context.getDefaultSpace
-		var adr = new Address(^space.spaceID, UUID.randomUUID)
-		var sSimulation = new StopSimulation(adr)
-		context.defaultSpace.emit(sSimulation)
+		defaultSpace.emit(new StopSimulation)
+
 		if (uiSingleton !== null) {
 			uiSingleton.visible = false
 			if (environmentSingleton !== null) {
@@ -109,9 +104,7 @@ public class FrameworkLauncher {
 			uiSingleton.dispose
 		}
 		environmentSingleton = null
-		environmentInteractionSpace = null
 		uiSingleton = null
-		kernel = null
 	}
-	
+
 }

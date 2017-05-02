@@ -1,0 +1,71 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2015-17 Stephane GALLAND.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.labworks.pacman.environment.^agent
+
+import com.google.inject.Inject
+import com.google.inject.Injector
+import io.sarl.lang.core.Space
+import io.sarl.lang.core.SpaceID
+import io.sarl.lang.core.SpaceSpecification
+import io.sarl.util.OpenEventSpace
+import io.sarl.lang.core.EventListener
+
+/** Space that is representing the Jaak environment.
+ *
+ * @author $Author: sgalland$
+ * @version $FullVersion$
+ * @mavengroupid $GroupId$
+ * @mavenartifactid $ArtifactId$
+ */
+class MazeSpaceSpecification implements SpaceSpecification<MazeSpace> {
+
+	@Inject
+	var injector : Injector 
+
+	/**
+	 */
+	new {
+	}
+
+	def create(id : SpaceID, params : Object*) : MazeSpace {
+		if (params.length >= 1 && params.get(0) instanceof OpenEventSpace
+			&& params.get(1) instanceof EventListener) {
+			return createSpace(id, params.get(0) as OpenEventSpace, params.get(1) as EventListener)
+		}
+		throw new IllegalArgumentException("No event listener")
+	}
+
+	/**
+	 * Creates a {@link Space} that respects this specification.
+	 *
+	 * @param spaceId - the {@link SpaceID} for the newly created {@link Space}
+	 * @param commmunicationSpace - the communication space.
+	 * @return an instance of {@link Space}
+	 */
+	def createSpace(spaceId : SpaceID,
+			communicationSpace : OpenEventSpace,
+			creator : EventListener) : MazeSpace {
+		var ^space : MazeSpace = new DefaultMazeSpaceImpl(spaceId, communicationSpace, creator)
+		this.injector.injectMembers(^space)
+		return ^space
+	}
+
+}

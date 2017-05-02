@@ -21,12 +21,12 @@
 package fr.utbm.info.ia51.framework.environment
 
 import fr.utbm.info.ia51.framework.math.Shape2f
-import fr.utbm.info.ia51.framework.util.LocalizedString
 import java.util.ArrayList
 import java.util.UUID
 import fr.utbm.info.ia51.framework.math.Vector2f
 import fr.utbm.info.ia51.framework.math.MathUtil
 import java.util.List
+import java.text.MessageFormat
 
 /**
  * Object on the environment.
@@ -68,7 +68,7 @@ class AgentBody extends AbstractMobileObject implements Body {
 	}
 
 	override toString : String {
-		var label = LocalizedString::getString(this.class, "BODY_OF", ID) //$NON-NLS-1$;
+		var label = MessageFormat::format("Body of {0}", ID)
 		var name = getName
 		if (name.isNullOrEmpty) {
 			return name + "(" + label + ")"

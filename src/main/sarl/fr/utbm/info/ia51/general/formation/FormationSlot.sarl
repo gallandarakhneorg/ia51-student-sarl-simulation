@@ -22,7 +22,6 @@ package fr.utbm.info.ia51.general.formation
 
 import fr.utbm.info.ia51.framework.math.Point2f
 import fr.utbm.info.ia51.framework.math.Vector2f
-import fr.utbm.info.ia51.framework.util.LocalizedString
 
 /**
  * A slot in a formation body.
@@ -67,7 +66,7 @@ class FormationSlot {
 	}
 	
 	override toString : String {
-		LocalizedString::getString(typeof(FormationSlot), "SLOT", this.spotIndex) //$NON-NLS-1$
+		"Slot " + this.spotIndex
 	}
 	
 	/** Replies the global position of this slot.

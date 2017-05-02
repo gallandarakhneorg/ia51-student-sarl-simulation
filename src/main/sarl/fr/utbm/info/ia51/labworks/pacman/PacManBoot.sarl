@@ -1,0 +1,66 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2014-15 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.labworks.pacman
+
+import fr.utbm.info.ia51.labworks.pacman.environment.^agent.Environment
+import fr.utbm.info.ia51.labworks.pacman.ui.PacManGUI
+import io.sarl.core.Initialize
+import io.sarl.core.Lifecycle
+
+/**
+ * Launcher of the simulation framework.
+ *
+ * This launcher needs the {@link http://www.janusproject.io Janus platform}.
+ * 
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+agent PacManBoot {
+	
+	uses Lifecycle
+
+	/** Width of the world (in number of cells).
+	 */
+	val WIDTH = 25
+
+	/** Height of the world (in number of cells).
+	 */
+	val HEIGHT = 25
+
+	/** Number of ghosts at the start-up.
+	 */
+	val NB_GHOSTS = 3
+	
+	/** Percpetion distance for the agents (usually the ghosts).
+	 */
+	val PERCEPTION_DISTANCE = 5
+	
+	/** The UI will force the environment agent to wait for it.
+	 */
+	val WAITING_DURATION = 500
+	
+	on Initialize {
+		var ui = new PacManGUI(WAITING_DURATION)
+
+		spawn(typeof(Environment), WIDTH, HEIGHT, NB_GHOSTS, PERCEPTION_DISTANCE, ui)
+	}
+
+}

@@ -22,7 +22,6 @@ package fr.utbm.info.ia51.general.formation
 
 import fr.utbm.info.ia51.framework.math.MathUtil
 import fr.utbm.info.ia51.framework.math.Vector2f
-import fr.utbm.info.ia51.framework.util.LocalizedString
 
 /**
  * Formation with body guards.
@@ -55,7 +54,7 @@ class BodyGuardFormationPattern extends FormationPattern {
 	}
 
 	override toString : String {
-		LocalizedString::getString(typeof(BodyGuardFormationPattern), "NAME", this.slots.size) 		// $NON-NLS-1$
+		"Body Guard n=" + this.slots.size
 	}
 
 	protected synchronized override createSpot(spotIndex : int, spotCount : int) : FormationSlot {

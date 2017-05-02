@@ -27,7 +27,12 @@ import fr.utbm.info.ia51.framework.math.Shape2f
 import fr.utbm.info.ia51.framework.math.Vector2f
 import java.awt.Graphics2D
 import java.awt.Shape
+import java.awt.^event.ActionEvent
+import java.awt.^event.ActionListener
+import java.awt.^event.WindowAdapter
+import java.awt.^event.WindowEvent
 import java.io.Serializable
+import java.lang.ref.WeakReference
 
 /**
  * GUI for the simulation framework.
@@ -148,5 +153,35 @@ interface FrameworkGUI extends EnvironmentListener {
 	 * @param screenPosition the position of the target on the screen
 	 */
 	def setMouseTargetOnScreen(screenPosition : Point2f)
+
+	/** Change the handler for termination queried with the UI.
+	 *
+	 * @param handler the handler
+	 */
+	def setTerminationHandler(handler : ()=>void)
+
+	/** Replies the handler for termination queried with the UI.
+	 * 
+	 * @return the handler
+	 */
+	def getTerminationHandler : ()=>void
+
+}
+
+class WindowClosingHandler extends WindowAdapter implements ActionListener {
+
+	val parentUI : WeakReference<FrameworkGUI>
+
+	new (parent : FrameworkGUI) {
+		this.parentUI = new WeakReference(parent)
+	}
+
+	override windowClosing(e : WindowEvent) {
+		this.parentUI?.get.terminationHandler?.apply
+	}
+	
+	override actionPerformed(e : ActionEvent) {
+		this.parentUI?.get.terminationHandler?.apply
+	}
 
 }

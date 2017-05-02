@@ -1,0 +1,107 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2015-17 Stephane GALLAND.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+
+package fr.utbm.info.ia51.labworks.pacman.players
+
+import io.sarl.core.Destroy
+import io.sarl.core.Initialize
+import io.sarl.core.Lifecycle
+import java.util.List
+import java.util.Random
+import fr.utbm.info.ia51.labworks.pacman.environment.maze.Direction
+import fr.utbm.info.ia51.labworks.pacman.environment.^agent.PacManIsDead
+import fr.utbm.info.ia51.labworks.pacman.environment.^agent.Perception
+import fr.utbm.info.ia51.labworks.pacman.environment.maze.PacmanBody
+import fr.utbm.info.ia51.labworks.pacman.environment.^agent.MazeMotion
+import fr.utbm.info.ia51.labworks.pacman.environment.^agent.DefaultMazeMotionSkill
+
+/** Ghost.
+ * 
+ * @author $Author: sgalland$
+ * @version $FullVersion$
+ * @mavengroupid $GroupId$
+ * @mavenartifactid $ArtifactId$
+ */
+agent Ghost {
+	
+	uses MazeMotion, Lifecycle
+
+	val random = new Random
+	
+	var previousDirection : Direction
+
+	on Initialize {
+		// The agent learns how to move its body.
+		setSkill(new DefaultMazeMotionSkill)
+	}
+	
+	on PacManIsDead {
+		killMe
+	}
+
+	on Perception {
+		var freeDirections = newArrayList
+		freeDirections.addAll(Direction::values)
+		var pacman : PacmanBody
+		for ( percept : occurrence.objects) {
+			var v = percept.position - occurrence.position
+			if (percept instanceof PacmanBody) {
+				pacman = percept
+			}
+			if (v.length <= 1 && !percept.pickable) {
+				var direction = Direction::fromVector(v)
+				freeDirections -= direction
+			}
+		}	
+		if (pacman !== null) {
+			var v = pacman.position - occurrence.position
+			var direction = Direction::fromVector(v)
+			if (pacman.superPacman) {
+				freeDirections -= direction
+				freeDirections.randomMove
+			} else {
+				direction.memorizeAndMoveTo
+			}
+		} else {
+			freeDirections.randomMove
+		}
+	}
+	def memorizeAndMoveTo(direction : Direction) {
+		this.previousDirection = direction
+		move(direction)
+	}
+	def randomMove(directions : List<Direction>) {
+		var selectedDirection : Direction
+		if (!directions.empty) {
+			if (directions.size == 2 && this.previousDirection !== null
+				&& directions.contains(this.previousDirection)) {
+				selectedDirection = this.previousDirection
+			} else {
+				if (directions.size > 1 && this.previousDirection !== null) {
+					directions -= this.previousDirection.opposite
+				}
+				selectedDirection = directions.get(this.random.nextInt(directions.size))
+			}
+		}
+		selectedDirection.memorizeAndMoveTo
+	}
+
+}

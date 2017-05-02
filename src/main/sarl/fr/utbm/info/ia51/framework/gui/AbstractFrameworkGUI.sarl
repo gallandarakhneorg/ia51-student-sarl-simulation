@@ -20,7 +20,6 @@
  */
 package fr.utbm.info.ia51.framework.gui
 
-import fr.utbm.info.ia51.framework.FrameworkLauncher
 import fr.utbm.info.ia51.framework.environment.EnvironmentEvent
 import fr.utbm.info.ia51.framework.environment.WorldModelState
 import fr.utbm.info.ia51.framework.math.Circle2f
@@ -29,14 +28,11 @@ import fr.utbm.info.ia51.framework.math.Rectangle2f
 import fr.utbm.info.ia51.framework.math.Shape2f
 import fr.utbm.info.ia51.framework.math.Vector2f
 import fr.utbm.info.ia51.framework.time.TimeManager
-import fr.utbm.info.ia51.framework.util.LocalizedString
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.Graphics2D
 import java.awt.GridLayout
 import java.awt.Shape
-import java.awt.^event.WindowAdapter
-import java.awt.^event.WindowEvent
 import java.awt.geom.Ellipse2D
 import java.awt.geom.GeneralPath
 import java.awt.geom.Rectangle2D
@@ -50,6 +46,7 @@ import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.JSlider
 import javax.swing.WindowConstants
+import java.text.MessageFormat
 
 /** Abstract implementation of a GUI for the agent framework.
  *
@@ -73,6 +70,8 @@ abstract class AbstractFrameworkGUI extends JFrame implements FrameworkGUI {
 	val messageBox : JLabel
 	val speedSlider : JSlider 
 
+	var terminationHandler : () => void
+
 	private static def time2slider(delay : float) : int {
 		(WAITING_MAX - WAITING_MIN - delay / WAITING_FACTOR) as int		
 	}
@@ -81,7 +80,25 @@ abstract class AbstractFrameworkGUI extends JFrame implements FrameworkGUI {
 		(WAITING_MAX - WAITING_MIN - value) * WAITING_FACTOR;
 	}
 
-	/**
+	//FIXME
+	def equals(o : Object) : boolean {
+		return false;
+	}
+
+	//FIXME
+	def hashCode() : int {
+		System.identityHashCode(this)
+	}
+
+	def setTerminationHandler(handler : () => void) {
+		this.terminationHandler = handler
+	}
+
+	def getTerminationHandler() : ()=>void {
+		this.terminationHandler
+	}
+
+	/** 
 	 * @param title
 	 * @param worldWidth
 	 * @param worldHeight
@@ -104,13 +121,13 @@ abstract class AbstractFrameworkGUI extends JFrame implements FrameworkGUI {
 		this.scroll = new JScrollPane(world)
 		content.add(BorderLayout::CENTER, scroll)
 
-		var closeBt = new JButton(LocalizedString::getString(this.class, "QUIT")) //$NON-NLS-1$
+		var closeBt = new JButton("Quit")
 		closeBt.addActionListener [
-			FrameworkLauncher::stopSimulation
+			terminationHandler.apply
 		]
 		
 		this.speedSlider = new JSlider(JSlider::HORIZONTAL)
-		this.speedSlider.toolTipText = LocalizedString::getString(this.class, "SLIDER_LABEL");
+		this.speedSlider.toolTipText = "Change the simulation speed"
 		this.speedSlider.minimum = WAITING_MIN
 		this.speedSlider.maximum = WAITING_MAX
 		this.speedSlider.value = timeManager.simulationDelay.time2slider
@@ -124,11 +141,7 @@ abstract class AbstractFrameworkGUI extends JFrame implements FrameworkGUI {
 
 		world.preferredSize = new Dimension(worldWidth as int, worldHeight as int)
 
-		addWindowListener(new WindowAdapter {
-			override windowClosing(e : WindowEvent) {
-				FrameworkLauncher.stopSimulation
-			}
-		})
+		addWindowListener(new WindowClosingHandler(this))
 
 		var mouseAdapter = new FrameworkMouseAdapter(this)
 		world.addMouseMotionListener(mouseAdapter)
@@ -142,7 +155,7 @@ abstract class AbstractFrameworkGUI extends JFrame implements FrameworkGUI {
 		setLocation(-d.width / 2, -d.height / 2)
 		this.locationRelativeTo = null
 	}
-	
+
 	/** Replies if the mouse cursor must be hidden or not.
 	 * 
 	 * @return <code>true</code> to hide the cursor, <code>false</code> to show.
@@ -191,7 +204,7 @@ abstract class AbstractFrameworkGUI extends JFrame implements FrameworkGUI {
 				this.environment.mouseTarget = masPosition
 			}
 			this.message = if (masPosition === null) null else 
-				LocalizedString.getString(this.class, "TARGET_POSITION", masPosition.x, masPosition.y)
+				MessageFormat::format("Target: ({0,number,#.#}; {1,number,#.#})", masPosition.x, masPosition.y)
 		}
 	}
 
@@ -203,8 +216,10 @@ abstract class AbstractFrameworkGUI extends JFrame implements FrameworkGUI {
 			if (this.environment !== null) {
 				this.environment.mouseTarget = masPosition
 			}
-			this.message = if (masPosition === null) null else 
-				LocalizedString.getString(this.class, "TARGET_POSITION", masPosition.x, masPosition.y)
+			this.message = if (masPosition === null)
+				null
+			else
+				MessageFormat::format("Target: ({0,number,#.#}; {1,number,#.#})", masPosition.x, masPosition.y)
 		}
 	}
 

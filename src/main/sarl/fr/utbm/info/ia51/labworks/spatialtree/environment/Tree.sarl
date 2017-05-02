@@ -1,0 +1,209 @@
+package fr.utbm.info.ia51.labworks.spatialtree.environment
+
+import fr.utbm.info.ia51.framework.environment.Frustum
+import fr.utbm.info.ia51.framework.environment.ShapedObject
+import fr.utbm.info.ia51.framework.math.Point2f
+import fr.utbm.info.ia51.framework.math.Rectangle2f
+import fr.utbm.info.ia51.framework.math.Shape2f
+import fr.utbm.info.ia51.framework.math.Vector2f
+import java.lang.ref.WeakReference
+import java.util.ArrayList
+import java.util.Arrays
+import java.util.Collections
+import java.util.Iterator
+import java.util.LinkedList
+import java.util.List
+
+class Tree<T extends ShapedObject> {
+	val root : TreeNode<T>
+	new (box : Rectangle2f) {
+		this.root = new TreeNode(box)
+	}
+	def getRoot : TreeNode<T> {
+		this.root
+	}
+	def iterator(frustum : Frustum, position : Point2f, orientation : Vector2f) : Iterator<T> {
+		var geometricFrustum = frustum.toShape(position, orientation)
+		var nodeIterator = new FrustumNodeIterator(this, geometricFrustum)
+		return new FrustumObjectIterator(nodeIterator, geometricFrustum)
+	}
+	def add(o : T) {
+		this.root.add(o)
+	}
+}
+
+class TreeNode<T extends ShapedObject> {
+	
+	val parent : WeakReference<TreeNode<T>>
+	
+	val box : Rectangle2f
+	
+	var objects = new LinkedList<T>
+	
+	var children : List<TreeNode<T>>
+	
+	new (parent : TreeNode = null, box : Rectangle2f) {
+		if (parent !== null) {
+			this.parent = new WeakReference(parent)
+		} else {
+			this.parent = null
+		}
+		this.box = box
+	}
+	
+	def getParent : TreeNode<T> {
+		this.parent?.get
+	}
+	
+	def getBox : Rectangle2f {
+		this.box
+	}
+	
+	def getObjects : Iterable<T> {
+		Collections::unmodifiableList(this.objects)
+	}
+
+	def getChildren : Iterable<TreeNode<T>> {
+		if (this.children === null) Collections.emptyList else Arrays.asList(this.children)
+	}
+
+	def add(o : T) {
+		if (this.children === null) {
+			if (this.objects.size + 1 > 10) {
+				var list = this.objects
+				this.objects = new LinkedList
+				createChildren
+				for (oo : list) {
+					if (!oo.pushInChild) {
+						this.objects += oo
+					}
+				}
+				if (!o.pushInChild) {
+					this.objects += o
+				}
+				collapseChildrenIfNecessary
+			} else {
+				this.objects += o
+			}
+		} else {
+			if (!o.pushInChild) {
+				this.objects += o
+			}
+		}
+	}
+
+	private def createChildren {
+		this.children = new ArrayList(4)
+		for (i : 0 .. 3) {
+			this.children.add(new TreeNode(this, computeChildBox(i)))
+		}
+	}
+
+	private def collapseChildrenIfNecessary {
+		for (i : 0 .. 3) {
+			var c = this.children.get(i)
+			if (!c.objects.empty || !c.children.empty) {
+				return false
+			}
+		}
+		this.children = null
+		return true
+	}
+
+	private def computeChildBox(i : int) : Rectangle2f {
+		var center = this.box.center
+		switch (i) {
+			case 0:
+				return new Rectangle2f(this.box.lower, center)
+			case 1:
+				return new Rectangle2f(center.x, this.box.lower.y, this.box.upper.x, center.y)
+			case 2:
+				return new Rectangle2f(this.box.lower.x, center.y, center.x, this.box.upper.y)
+			case 3:
+				return new Rectangle2f(center, this.box.upper)
+		}
+	}
+
+	private def pushInChild(o : T) : boolean {
+		var candidates = new ArrayList<TreeNode<T>>(4)
+		for (i : 0 .. 3) {
+			var node = this.children.get(i)
+			if (node.box.intersects(o.shape)) {
+				candidates += node
+			}
+		}
+		if (candidates.size != 1) {
+			return false
+		}
+		candidates.get(0).add(o)
+		return true
+	}
+
+}
+
+class FrustumNodeIterator<T extends ShapedObject>
+		implements Iterator<TreeNode<T>> {
+	
+	var stack = new LinkedList<TreeNode<T>>
+	
+	var frustum : Shape2f<?>
+	
+	new (tree : Tree<T>, f : Shape2f<?>) {
+		this.frustum = f
+		if (f.intersects(tree.root.box)) {
+			this.stack += tree.root
+		}
+	}
+	
+	override hasNext() : boolean {
+		!this.stack.empty
+	}
+	
+	override next() : TreeNode<T> {
+		var n = this.stack.removeLast
+		for (c : n.children) {
+			if (this.frustum.intersects(c.box)) {
+				this.stack += c
+			}
+		}
+		return n
+	}
+	
+}
+
+class FrustumObjectIterator<T extends ShapedObject>
+		implements Iterator<T> {
+
+	var iterator : Iterator<TreeNode<T>>
+	var frustum : Shape2f<?>
+	var buffer = new LinkedList<T>
+
+	new (iterator : Iterator<TreeNode<T>>, f : Shape2f<?>) {
+		this.frustum = f
+		this.iterator = iterator
+		fillBuffer
+	}
+
+	override hasNext() : boolean {
+		!this.buffer.empty
+	}
+
+	override next() : T {
+		var o = this.buffer.removeFirst
+		fillBuffer
+		return o
+	}
+	
+	private def fillBuffer {
+		while (this.buffer.empty && this.iterator.hasNext) {
+			var node = this.iterator.next
+			for (o : node.objects) {
+				if (this.frustum.intersects(o.shape)) {
+					this.buffer += o
+				}
+			}
+		}
+	}
+
+}
+
