@@ -20,13 +20,11 @@
  */
 package fr.utbm.info.ia51.labworks.pacman.environment.^agent
 
-import com.google.inject.Inject
-import com.google.inject.Injector
+import io.sarl.lang.core.EventListener
 import io.sarl.lang.core.Space
 import io.sarl.lang.core.SpaceID
 import io.sarl.lang.core.SpaceSpecification
 import io.sarl.util.OpenEventSpace
-import io.sarl.lang.core.EventListener
 
 /** Space that is representing the Jaak environment.
  *
@@ -36,9 +34,6 @@ import io.sarl.lang.core.EventListener
  * @mavenartifactid $ArtifactId$
  */
 class MazeSpaceSpecification implements SpaceSpecification<MazeSpace> {
-
-	@Inject
-	var injector : Injector 
 
 	/**
 	 */
@@ -64,7 +59,6 @@ class MazeSpaceSpecification implements SpaceSpecification<MazeSpace> {
 			communicationSpace : OpenEventSpace,
 			creator : EventListener) : MazeSpace {
 		var ^space : MazeSpace = new DefaultMazeSpaceImpl(spaceId, communicationSpace, creator)
-		this.injector.injectMembers(^space)
 		return ^space
 	}
 

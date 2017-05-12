@@ -301,8 +301,9 @@ abstract class AbstractFrameworkGUI extends JFrame implements FrameworkGUI {
 			return null
 		}
 		if (shape instanceof Circle2f) {
-			var p = shape.center.mas2screen
-			var radius = shape.radius.mas2screen
+			var circle : Circle2f = shape
+			var p = circle.center.mas2screen
+			var radius = circle.radius.mas2screen
 			return new Ellipse2D.Float(
 					p.x - radius,
 					p.y - radius,
@@ -310,13 +311,14 @@ abstract class AbstractFrameworkGUI extends JFrame implements FrameworkGUI {
 					2f * radius)
 		}
 		if (shape instanceof Rectangle2f) {
-			var l = shape.lower.mas2screen
-			var u = shape.upper.mas2screen
+			var rect : Rectangle2f = shape
+			var l = mas2screen(rect.lower)
+			var u = mas2screen(rect.upper)
 			return new Rectangle2D.Float(
 					Math::min(l.x, u.x) as float,
 					Math::min(l.y, u.y) as float,
-					shape.width.mas2screen,
-					shape.height.mas2screen)
+					rect.width.mas2screen,
+					rect.height.mas2screen)
 		}
 		throw new IllegalArgumentException
 	}
