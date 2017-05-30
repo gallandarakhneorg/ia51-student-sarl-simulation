@@ -20,6 +20,7 @@
  */
 package fr.utbm.info.ia51.framework.environment
 
+import fr.utbm.info.ia51.framework.time.TimePercept
 import io.sarl.core.Behaviors
 import io.sarl.core.DefaultContextInteractions
 import io.sarl.core.Initialize
@@ -28,8 +29,7 @@ import io.sarl.lang.core.Address
 import io.sarl.util.OpenEventSpace
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
-import fr.utbm.info.ia51.framework.time.TimePercept
-import fr.utbm.info.ia51.framework.util.AddressUUIDScope
+import java.util.concurrent.atomic.AtomicInteger
 
 /** This agent is managing the physic space. 
  *
@@ -43,7 +43,7 @@ agent EnvironmentAgent {
 	var ^space : OpenEventSpace
 	var myAdr : Address
 	
-	var influences = 0
+	val influences = new AtomicInteger(0)
 	
 	val freeze = new AtomicBoolean(false)
 	
@@ -65,8 +65,8 @@ agent EnvironmentAgent {
 			var body = this.environment.getAgentBodyFor(id)
 			body.influence(influence)
 		}
-		this.influences ++
-		if (this.influences >= this.environment.getAgentBodyNumber()) {
+		var v = this.influences.incrementAndGet
+		if (v >= this.environment.getAgentBodyNumber()) {
 			runEnvironmentBehavior
 		}
 	}
@@ -81,13 +81,16 @@ agent EnvironmentAgent {
 	
 	def runEnvironmentBehavior {
 		this.freeze.set(true)
-		this.influences = 0 
-		this.environment.runBehaviour
-		var delay = this.environment.timeManager.simulationDelay as long
-		if (delay > 0) {
-			Thread::sleep(delay)
+		try {
+			this.influences.set(0) 
+			this.environment.runBehaviour
+			var delay = this.environment.timeManager.simulationDelay as long
+			if (delay > 0) {
+				Thread::sleep(delay)
+			}
+		} finally {
+			this.freeze.set(false)
 		}
-		this.freeze.set(false)
 		notifyAgentsOrDie
 	}
 	

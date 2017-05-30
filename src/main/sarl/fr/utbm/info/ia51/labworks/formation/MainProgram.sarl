@@ -38,8 +38,8 @@ agent PrescribedFormationBoot extends FrameworkLauncher {
 
 	val WORLD_SIZE_X = 700f
 	val WORLD_SIZE_Y = 700f
-	val ANCHOR_COUNT = 15
-	val FOLLOWER_COUNT = 0
+	val ANCHOR_COUNT = 10
+	val FOLLOWER_COUNT = 5
 
 	override initializeSimulation(parameters : List<Object>) : boolean {
 		var type = BehaviorTypeSelector.open
