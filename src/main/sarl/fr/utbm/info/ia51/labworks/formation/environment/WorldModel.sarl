@@ -77,7 +77,7 @@ class WorldModel extends AbstractEnvironment implements WorldModelStateProvider 
 				allPercepts += new Percept(this.mouseTarget)
 			}
 
-			var bestDistance = Float::MAX_VALUE
+			/*var bestDistance = Float::MAX_VALUE
 			var nearestBody : AgentBody
 			
 			for (b1 : this.agentBodies) {
@@ -93,7 +93,7 @@ class WorldModel extends AbstractEnvironment implements WorldModelStateProvider 
 			
 			if (nearestBody !== null) {
 				allPercepts += new Percept(nearestBody)
-			}
+			}*/
 		}
 		
 		return allPercepts

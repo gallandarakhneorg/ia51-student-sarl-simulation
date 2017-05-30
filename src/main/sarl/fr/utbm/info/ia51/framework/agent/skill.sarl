@@ -96,7 +96,7 @@ skill StandardPhysicEnvironment implements PhysicEnvironment {
 		}
 		var ^event = new InfluenceEvent(influences)
 		^event.source = this.myAdr
-		this.physicSpace.emit(^event, new AddressUUIDScope(this.environmentID))
+		this.physicSpace.emit(^event)[it.UUID == this.environmentID]
 	}
 	
 }

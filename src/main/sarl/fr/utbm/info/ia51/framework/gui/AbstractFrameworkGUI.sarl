@@ -302,7 +302,7 @@ abstract class AbstractFrameworkGUI extends JFrame implements FrameworkGUI {
 		}
 		if (shape instanceof Circle2f) {
 			var circle : Circle2f = shape
-			var p = circle.center.mas2screen
+			var p = shape.center.mas2screen
 			var radius = circle.radius.mas2screen
 			return new Ellipse2D.Float(
 					p.x - radius,

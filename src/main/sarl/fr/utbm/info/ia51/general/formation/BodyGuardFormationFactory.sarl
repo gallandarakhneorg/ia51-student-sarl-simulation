@@ -20,46 +20,46 @@
  */
 package fr.utbm.info.ia51.general.formation
 
-/**
- * Formation in V.
+import fr.utbm.info.ia51.framework.math.Vector2f
+import fr.utbm.info.ia51.framework.math.MathUtil
+
+/** Factory of formation with a defensive circle pattern.
  * 
  * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
  * @version $Name$ $Revision$ $Date$
  */
-class VFormationPattern extends FormationPattern {
+class BodyGuardFormationFactory implements FormationFactory {
 
-	/** Space between slots.
+	/** Space between anchor centers.
 	 */
-	public static val INTER_SLOT_SPACE = 50f
+	public val distance : float
 	
-	/**
-	 */
-	new (slotCount : int = 1) {
-		scale(slotCount)
+	new (distanceBetweenAnchors : float = 10f, sizeOfAnchor : float = 50f) {
+		this.distance = Math::max(distanceBetweenAnchors, 0f) + Math::max(sizeOfAnchor, 0f)
 	}
 
-	override toString : String {
-		"VFormation n=" + this.slots.size
-	}
+	def build(nbAnchors : int) : FormationPattern {
+		var pattern = new FormationPattern
 
-	protected synchronized override createSpot(spotIndex : int, spotCount : int) : FormationSlot {
-		var newSpot : FormationSlot 
-		
-		if (spotIndex == 0) {
-			newSpot = new FormationSlot // leader
-		} else {
-			var parent = if (spotIndex <= 2) getSlotAt(0) else getSlotAt(spotIndex - 2)
-			
-			if (spotIndex % 2 == 0) {
-				// left spot
-				newSpot = new FormationSlot(-INTER_SLOT_SPACE, -INTER_SLOT_SPACE, 0, parent, spotIndex)
-			} else {
-				// right spot
-				newSpot = new FormationSlot(-INTER_SLOT_SPACE, INTER_SLOT_SPACE, 0, parent, spotIndex)
+		var leader = new FormationAnchor(pattern)
+		pattern.addAnchor(leader)
+
+		// P = d * (n-1)
+		// P = 2 * PI * R
+		val radius = (this.distance * (nbAnchors - 1)) / MathUtil.TWO_PI
+		var baseAngle = MathUtil.TWO_PI / (nbAnchors - 1)
+
+		if (nbAnchors > 1) {
+			for (i : 1..<nbAnchors) {
+				var v = new Vector2f(radius, 0)
+				var angle = baseAngle * (i + 0.5f)
+				v.turn(angle)
+				var guard = new FormationAnchor(v.x, v.y, angle, leader, i)
+				pattern.addAnchor(guard)
 			}
 		}
 		
-		return newSpot
+		return pattern
 	}
 
 }

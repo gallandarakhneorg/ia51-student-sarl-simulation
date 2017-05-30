@@ -50,6 +50,7 @@ agent Rabbit extends AbstractAnimat {
 
 	// This function is called from "on Initialize" in the super type.
 	override overridableInitializationStage(it : Initialize) {
+		super.overridableInitializationStage(it)
 		if (this.behaviorType == DynamicType::STEERING) {
 			this.seekBehaviour = new SteeringSeekAlgorithm
 			this.fleeBehaviour = new SteeringFleeAlgorithm

@@ -22,8 +22,8 @@ package fr.utbm.info.ia51.labworks.formation
 
 import fr.utbm.info.ia51.framework.FrameworkLauncher
 import fr.utbm.info.ia51.framework.gui.BehaviorTypeSelector
-import fr.utbm.info.ia51.general.formation.BodyGuardFormationPattern
-import fr.utbm.info.ia51.general.formation.FormationAssignment
+import fr.utbm.info.ia51.general.formation.BodyGuardFormationFactory
+import fr.utbm.info.ia51.general.formation.FifoFormationAssignment
 import fr.utbm.info.ia51.labworks.formation.^agent.Follower
 import fr.utbm.info.ia51.labworks.formation.^agent.Leader
 import fr.utbm.info.ia51.labworks.formation.environment.WorldModel
@@ -38,19 +38,20 @@ agent PrescribedFormationBoot extends FrameworkLauncher {
 
 	val WORLD_SIZE_X = 700f
 	val WORLD_SIZE_Y = 700f
-	val SLOT_COUNT = 15
-	val FOLLOWER_COUNT = 10
+	val ANCHOR_COUNT = 15
+	val FOLLOWER_COUNT = 0
 
 	override initializeSimulation(parameters : List<Object>) : boolean {
 		var type = BehaviorTypeSelector.open
 		if (type !== null) {
-			var formationAssignment = new FormationAssignment
-			var formation = new BodyGuardFormationPattern(SLOT_COUNT)
+			var formationAssignment = new FifoFormationAssignment
+			var factory = new BodyGuardFormationFactory
+			var formation = factory.build(ANCHOR_COUNT)
 
 			var environment = new WorldModel(WORLD_SIZE_X, WORLD_SIZE_Y)
 
 			environment.createLeader
-			for (i : 1 .. FOLLOWER_COUNT) {
+			for (i : 0 ..< FOLLOWER_COUNT) {
 				environment.createFollower
 			}
 

@@ -27,114 +27,82 @@ import java.util.List
 import fr.utbm.info.ia51.framework.math.Point2f
 import fr.utbm.info.ia51.framework.math.Vector2f
 
-/** A formation composed of connected slots.
+/** A formation composed of connected anchors.
  * 
  * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
  * @version $Name$ $Revision$ $Date$
  */
-abstract class FormationPattern {
+class FormationPattern {
 
-	var leaderSpot : FormationSlot 
-	val spots : List<FormationSlot> 
+	var leaderAnchor : FormationAnchor 
+	val anchors : List<FormationAnchor> 
 
+	val globalPosition = new Point2f
+	val globalOrientation = new Vector2f(1,0)
+	
 	/**
 	 */
 	new {
-		this.leaderSpot = null
-		this.spots = new ArrayList
+		this.leaderAnchor = null
+		this.anchors = new ArrayList
 	}
 		
 	/** Clear the formation body.
 	 */
 	protected def clear {
-		this.leaderSpot = null
-		this.spots.clear
+		clearBuffers
+		this.leaderAnchor = null
+		this.anchors.clear
 	}
 
-	private def addSpot(spot : FormationSlot) {
-		this.spots += spot
-		if (this.spots.size == 1) {
-			this.leaderSpot = spot
+	/** Clear the buffers.
+	 */
+	protected def clearBuffers {
+		for (anchor : this.anchors) {
+			anchor.clear
+		}		
+	}
+
+	package def addAnchor(anchor : FormationAnchor) {
+		this.anchors += anchor
+		anchor.clear
+		if (this.anchors.size == 1) {
+			this.leaderAnchor = anchor
 		}
 	}
 	
-	/** Replies the slots in the formation body.
+	/** Replies the anchors in the formation body.
 	 * 
-	 * @return the slots in the formation body.
+	 * @return the anchors in the formation body.
 	 */
-	def getSlots : List<FormationSlot> {
-		Collections::unmodifiableList(this.spots)
+	def getAnchors : List<FormationAnchor> {
+		Collections::unmodifiableList(this.anchors)
 	}
 	
-	/** Replies the slot at the given index.
+	/** Replies the anchor at the given index.
 	 * 
 	 * @param index
-	 * @return the slot at the given index.
+	 * @return the anchor at the given index.
 	 */
-	def getSlotAt(index : int) : FormationSlot {
-		this.spots.get(index)
-	}
-
-	/** Force this formation body to contains the given number of slots.
-	 * 
-	 * @param spotCount
-	 */
-	def scale(spotCount : int) {
-		clear
-		for(i : 0..<spotCount) {
-			var spot = createSpot(i, spotCount)
-			if (spot !== null) {
-				addSpot(spot)
-			}
-		}
+	def getAnchorAt(index : int) : FormationAnchor {
+		this.anchors.get(index)
 	}
 	
-	/** Create a slot for the given position in the formation body.
-	 * 
-	 * @param spotIndex is the position of the new slot.
-	 * @param spotCount is the total number of slots in the formation.
-	 * @return the created slot.
-	 */
-	protected abstract def createSpot(spotIndex : int, spotCount : int) : FormationSlot
-	
-	/** Change the global position of the formation, ie of the leader.
-	 * 
-	 * @param x
-	 * @param y
-	 */
-	def setGlobalPosition(x : float, y : float) {
-		if (this.leaderSpot !== null) {
-			this.leaderSpot.setGlobalPosition(x, y)
-		}
-	}
-	
-	/** Change the global position of the formation, ie of the leader.
+	/** Change the global position and orientation of the formation.
 	 * 
 	 * @param position
-	 */
-	@Inline("setGlobalPosition(($1).getX(), ($1).getY())")
-	def setGlobalPosition(position : Point2f) {
-		setGlobalPosition(position.x, position.y)
-	}
-
-	/** Change the global orientation of the formation, ie of the leader.
-	 * 
-	 * @param x
-	 * @param y
-	 */
-	def setGlobalOrientation(x : float, y : float) {
-		if (this.leaderSpot !== null) {
-			this.leaderSpot.setGlobalOrientation(x,y)
-		}
-	}
-
-	/** Change the global orientation of the formation, ie of the leader.
-	 * 
 	 * @param direction
 	 */
-	@Inline("setGlobalOrientation(($1).getX(), ($1).getY())")
-	def setGlobalOrientation(direction : Vector2f) {
-		setGlobalOrientation(direction.x, direction.y)
+	def setFormationLocation(position : Point2f, direction : Vector2f) {
+		if (position !== null || direction !== null) {
+			if (position !== null) {
+				this.globalPosition.set(position)
+			}
+			if (direction !== null) {
+				this.globalOrientation.set(direction)
+			}
+			clearBuffers
+		}
 	}
 
 	/** Replies the global position of the formation, ie of the leader.
@@ -142,7 +110,23 @@ abstract class FormationPattern {
 	 * @return the global position of the leader.
 	 */
 	def getGlobalPosition : Point2f {
-		if (this.leaderSpot !== null) this.leaderSpot.globalPosition else new Point2f
+		this.globalPosition.clone
+	}
+
+	/** Replies the global orientation of the formation, ie of the leader.
+	 * 
+	 * @return the global orientation of the leader.
+	 */
+	def getGlobalOrientation : Vector2f {
+		this.globalOrientation.clone
+	}
+
+	/** Replies the global orientation of the formation, ie of the leader.
+	 * 
+	 * @return the global orientation of the leader.
+	 */
+	def getGlobalAngle : float {
+		this.globalOrientation.orientationAngle
 	}
 
 }

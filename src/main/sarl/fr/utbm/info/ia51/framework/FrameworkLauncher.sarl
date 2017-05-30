@@ -91,10 +91,7 @@ abstract agent FrameworkLauncher {
 	}
 
 	def stopSimulation {
-		if (!canStop.getAndSet(false)) {
-			throw new IllegalStateException("You must call startSimulation() before stopSimulation().")
-		}
-		defaultSpace.emit(new StopSimulation)
+		emit(new StopSimulation)
 
 		if (uiSingleton !== null) {
 			uiSingleton.visible = false
@@ -105,6 +102,7 @@ abstract agent FrameworkLauncher {
 		}
 		environmentSingleton = null
 		uiSingleton = null
+		killMe
 	}
 
 }

@@ -32,13 +32,13 @@ import fr.utbm.info.ia51.general.motionalgo.SteeringSeekAlgorithm
 import fr.utbm.info.ia51.general.motionalgo.SteeringWanderAlgorithm
 import fr.utbm.info.ia51.general.motionalgo.WanderAlgorithm
 import io.sarl.core.Initialize
+import fr.utbm.info.ia51.framework.environment.Percept
 
 agent Leader extends AbstractAnimat {
 
 	var seekBehaviour : SeekAlgorithm
 	var wanderBehaviour : WanderAlgorithm
 
-	val STOP_DISTANCE = 3f
 	val STOP_RADIUS = MathUtil.PI / 10f
 	val SLOW_RADIUS = MathUtil.PI / 4f
 	val WANDER_CIRCLE_DISTANCE = 20f
@@ -49,6 +49,7 @@ agent Leader extends AbstractAnimat {
 
 	// This function is called from "on Initialize" in the super type.
 	override overridableInitializationStage(it : Initialize) {
+		super.overridableInitializationStage(it)
 		this.formation = it.parameters.get(3) as FormationPattern
 		if (this.behaviorType == DynamicType::STEERING) {
 			this.seekBehaviour = new SteeringSeekAlgorithm
@@ -60,23 +61,25 @@ agent Leader extends AbstractAnimat {
 		}
 	}
 
+	def extractTarget(e : PerceptionEvent) : Percept {
+		if (e.perceptions.empty) return null
+		e.perceptions.findFirst [it.type == "TARGET"]
+	}
+
 	on PerceptionEvent {
 		var myPosition = occurrence.body.position
 		var myOrientation = occurrence.body.direction
 
-		this.formation.globalPosition = myPosition
-		//this.formation.globalOrientation = myOrientation 
+		this.formation.setFormationLocation(myPosition, myOrientation)
 
-		var firstPercept = occurrence.perceptions.get(0)
-		if (firstPercept.type == "TARGET") {
-			var target = firstPercept.position.clone
-
+		var targetPercept = occurrence.extractTarget
+		if (targetPercept !== null) {
 			// run the seek behaviour
 			this.seekBehaviour.run(
 				occurrence.body.position,
 				occurrence.body.currentLinearSpeed,
 				occurrence.body.maxLinear,
-				target
+				targetPercept.position
 			).emitInfluence
 		} else {
 			// run the wander behaviour

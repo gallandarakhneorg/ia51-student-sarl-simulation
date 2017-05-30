@@ -26,7 +26,7 @@ import fr.utbm.info.ia51.framework.environment.PerceptionEvent
 import fr.utbm.info.ia51.framework.math.MathUtil
 import fr.utbm.info.ia51.general.formation.FormationAssignment
 import fr.utbm.info.ia51.general.formation.FormationPattern
-import fr.utbm.info.ia51.general.formation.FormationSlot
+import fr.utbm.info.ia51.general.formation.FormationAnchor
 import fr.utbm.info.ia51.general.motionalgo.AlignAlgorithm
 import fr.utbm.info.ia51.general.motionalgo.KinematicAlignAlgorithm
 import fr.utbm.info.ia51.general.motionalgo.KinematicSeekAlgorithm
@@ -50,14 +50,15 @@ agent Follower extends AbstractAnimat {
 	val WANDER_CIRCLE_RADIUS = 10f
 	val WANDER_MAX_ROTATION = MathUtil.PI/4f
 	
-	var formationSlot : FormationSlot
+	var formationAnchor : FormationAnchor
 
 	// This function is called from "on Initialize" in the super type.
 	override overridableInitializationStage(it : Initialize) {
+		super.overridableInitializationStage(it)
 		var formation = it.parameters.get(3) as FormationPattern
 		var assignment = it.parameters.get(4) as FormationAssignment
 		var index = assignment.allocate(false)
-		this.formationSlot = formation.getSlotAt(index)
+		this.formationAnchor = formation.getAnchorAt(index)
 		if (this.behaviorType == DynamicType::STEERING) {
 			this.seekBehaviour = new SteeringSeekAlgorithm
 			this.alignBehaviour = new SteeringAlignAlgorithm(STOP_RADIUS, SLOW_RADIUS)
@@ -71,7 +72,7 @@ agent Follower extends AbstractAnimat {
 	}
 	
 	on PerceptionEvent {
-		if (this.formationSlot === null) {
+		if (this.formationAnchor === null) {
 			this.wanderBehaviour.run(
 				occurrence.body.position,
 				occurrence.body.direction,
@@ -81,14 +82,14 @@ agent Follower extends AbstractAnimat {
 				occurrence.body.maxAngular
 			).emitInfluence			
 		} else {
-			var position = this.formationSlot.globalPosition
+			var position = this.formationAnchor.globalPosition
 			var bo1 = this.seekBehaviour.run(
 				occurrence.body.position,
 				occurrence.body.currentLinearSpeed,
 				occurrence.body.maxLinear,
 				position)
 	
-			var orientation = this.formationSlot.globalOrientation
+			var orientation = this.formationAnchor.globalOrientation
 			bo1.angular = this.alignBehaviour.run(
 				occurrence.body.direction,
 				occurrence.body.currentAngularSpeed,

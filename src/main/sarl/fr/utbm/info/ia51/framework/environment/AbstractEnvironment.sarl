@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 abstract class AbstractEnvironment implements Environment {
 
-	val agentBodies : Map<UUID, AgentBody> = new TreeMap
+	val agentBodyList : Map<UUID, AgentBody> = new TreeMap
 	val timeManager : TimeManager
 	val width : float
 	val height : float
@@ -114,7 +114,9 @@ abstract class AbstractEnvironment implements Environment {
 
 	protected synchronized def addAgentBody(body : AgentBody, position : Point2f, direction : float) {
 		if (this.init.get) {
-			this.agentBodies.put(body.ID, body)
+			synchronized (this.agentBodyList) {
+				this.agentBodyList.put(body.ID, body)
+			}
 			body.position = position
 			body.angle = direction
 			body.onAgentBodyCreated
@@ -146,15 +148,21 @@ abstract class AbstractEnvironment implements Environment {
 	 * @return the bodies in the environment.
 	 */
 	def getAgentBodies : Iterable<AgentBody> {
-		Collections.unmodifiableCollection(this.agentBodies.values)
+		synchronized (this.agentBodyList) {
+			return Collections.unmodifiableCollection(this.agentBodyList.values)
+		}
 	}
 
 	override getAgentBodyNumber : int {
-		this.agentBodies.size
+		synchronized (this.agentBodyList) {
+			return this.agentBodyList.size
+		}
 	}
 
 	override getAgentBodyFor(agentId : UUID) : AgentBody {
-		this.agentBodies.get(agentId)
+		synchronized (this.agentBodyList) {
+			return this.agentBodyList.get(agentId)
+		}
 	}
 
 	override runBehaviour {
@@ -166,7 +174,12 @@ abstract class AbstractEnvironment implements Environment {
 
 		var motionInfluences = new ArrayList<MotionInfluence>
 		var otherInfluences = new ArrayList<Influence>
-		for(body : this.agentBodies.values) {
+		var bodies : List<AgentBody>
+		synchronized (this.agentBodyList) {
+			bodies = new ArrayList(this.agentBodyList.size)
+			bodies.addAll(this.agentBodyList.values)
+		}
+		for(body : bodies) {
 			var mi = body.consumeMotionInfluence
 			if (mi !== null) {
 				motionInfluences += mi
@@ -174,7 +187,10 @@ abstract class AbstractEnvironment implements Environment {
 			for (i : body.consumeOtherInfluences) {
 				if (i instanceof KillInfluence) {
 					stateChanged()
-					var rbody = (this.agentBodies -= i.emitter)
+					var rbody : AgentBody
+					synchronized (this.agentBodyList) {
+						rbody = (this.agentBodyList -= i.emitter)
+					}
 					if (rbody !== null) {
 						rbody.onAgentBodyDestroyed
 					}
@@ -206,7 +222,7 @@ abstract class AbstractEnvironment implements Environment {
 		this.timeManager.increment
 
 		var list : List<Percept> 
-		for(body : this.agentBodies.values) {
+		for(body : bodies) {
 			list = body.computePerceptionsFor
 			body.setPerceptions(list ?: emptyList)
 		}

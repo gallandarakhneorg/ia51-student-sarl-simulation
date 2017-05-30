@@ -26,13 +26,22 @@ package fr.utbm.info.ia51.general.formation
  * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
  * @version $Name$ $Revision$ $Date$
  */
-interface FormationAssignment {
+class FifoFormationAssignment implements FormationAssignment {
 
+	var nextFreeAnchor = 1
+	
 	/** Allocate the next free anchor.
 	 * 
 	 * @param isLeader indicates if the caller is the leader or a follower.
 	 * @return the index of the next free anchor.
 	 */
-	def allocate(isLeader : boolean) : int
+	synchronized def allocate(isLeader : boolean) : int {
+		if (isLeader) {
+			return 0
+		}
+		var n = this.nextFreeAnchor
+		this.nextFreeAnchor++
+		return n
+	}
 
 }

@@ -63,6 +63,7 @@ agent Predator extends AbstractAnimat {
 	var lastTarget : Point2f = null
 	
 	override overridableInitializationStage(it : Initialize) {
+		super.overridableInitializationStage(it)
 		if (this.behaviorType == DynamicType::STEERING) {
 			this.seekBehaviour = new SteeringSeekAlgorithm
 			this.wanderBehaviour = new SteeringWanderAlgorithm(

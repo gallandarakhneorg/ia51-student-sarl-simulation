@@ -21,18 +21,18 @@
 package fr.utbm.info.ia51.general.formation
 
 
-/** Permits to agents to obtain a free anchor in a formation.
+/** Factory of formation pattern.
  * 
  * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
  * @version $Name$ $Revision$ $Date$
  */
-interface FormationAssignment {
+interface FormationFactory {
 
-	/** Allocate the next free anchor.
+	/** Build a formation.
 	 * 
-	 * @param isLeader indicates if the caller is the leader or a follower.
-	 * @return the index of the next free anchor.
+	 * @param nbAnchors the number of anchors, including the leader anchor.
+	 * @return the formation pattern.
 	 */
-	def allocate(isLeader : boolean) : int
+	def build(nbAnchors : int) : FormationPattern
 
 }

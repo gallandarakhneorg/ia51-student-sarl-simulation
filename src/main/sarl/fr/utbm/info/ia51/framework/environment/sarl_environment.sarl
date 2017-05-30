@@ -103,7 +103,7 @@ agent EnvironmentAgent {
 				new Percept(body),
 				timePercept)
 			^event.source = this.myAdr
-			this.^space.emit(^event, new AddressUUIDScope(body.ID))
+			this.^space.emit(^event) [it.UUID == body.ID]
 		}
 		if (!run) {
 			killMe
