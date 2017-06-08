@@ -1,0 +1,140 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2011-17 Stephane GALLAND <stephane.galland@utbm.fr>.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * This program is free software; you can redistribute it and/or modify
+ */
+package fr.utbm.info.ia51.general.formation
+
+import fr.utbm.info.ia51.framework.math.Vector2f
+
+/** Factory of formation with the following pattern:
+ * the leader is at the center, each follower are on the side
+ * of the leader, following a line subpattern.
+ * 
+ * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
+ * @version $Name$ $Revision$ $Date$
+ */
+class SideGuardFormationFactory implements FormationFactory {
+
+	/** Space between anchor centers.
+	 */
+	public val distance : float
+
+	new (distanceBetweenAnchors : float = 10f, sizeOfAnchor : float = 50f) {
+		this.distance = Math::max(distanceBetweenAnchors, 0f) + Math::max(sizeOfAnchor, 0f)
+	}
+
+	def build(nbAnchors : int) : FormationPattern {
+		var pattern = new FormationPattern
+
+		var leader = new FormationAnchor(pattern)
+		pattern.addAnchor(leader)
+
+		val nbGuards = nbAnchors - 1
+		
+		if (nbGuards > 1) {
+			val topLeftBranch = new Vector2f(-1, 0)
+			topLeftBranch.length = this.distance
+			val firstTopLeftBranch = new Vector2f(-0.5, -1)
+			firstTopLeftBranch.length = this.distance
+			val bottomLeftBranch = new Vector2f(-1, 0)
+			bottomLeftBranch.length = this.distance
+			val firstBottomLeftBranch = new Vector2f(-0.5, 1)
+			firstBottomLeftBranch.length = this.distance
+			val topRightBranch = new Vector2f(1, 0)
+			topRightBranch.length = this.distance
+			val firstTopRightBranch = new Vector2f(0.5, -1)
+			firstTopRightBranch.length = this.distance
+			val bottomRightBranch = new Vector2f(1, 0)
+			bottomRightBranch.length = this.distance
+			val firstBottomRightBranch = new Vector2f(0.5, 1)
+			firstBottomRightBranch.length = this.distance
+
+			var topLeftParent : FormationAnchor
+			var bottomLeftParent : FormationAnchor
+			var topRightParent : FormationAnchor
+			var bottomRightParent : FormationAnchor
+			
+			for (i : 1..nbGuards) {
+				var motion : Vector2f
+				var parent : FormationAnchor
+				switch (i % 4) {
+					case 1: {
+						if (topRightParent === null) {
+							motion = firstTopRightBranch
+							parent = leader
+						} else {
+							motion = topRightBranch
+							parent = topRightParent
+						}
+					}
+					case 2: {
+						if (bottomLeftParent === null) {
+							motion = firstBottomLeftBranch
+							parent = leader
+						} else {
+							motion = bottomLeftBranch
+							parent = bottomLeftParent
+						}
+					}
+					case 3: {
+						if (bottomRightParent === null) {
+							motion = firstBottomRightBranch
+							parent = leader
+						} else {
+							motion = bottomRightBranch
+							parent = bottomRightParent
+						}
+					}
+					case 0: {
+						if (topLeftParent === null) {
+							motion = firstTopLeftBranch
+							parent = leader
+						} else {
+							motion = topLeftBranch
+							parent = topLeftParent
+						}
+					}
+				}
+				var current = new FormationAnchor(
+					motion.x, motion.y,
+					0,
+					parent,
+					i)
+				pattern.addAnchor(current)
+				switch (i % 4) {
+					case 1: {
+						topRightParent = current
+					}
+					case 2: {
+						bottomLeftParent = current
+					}
+					case 3: {
+						bottomRightParent = current
+					}
+					case 0: {
+						topLeftParent = current
+					}
+				}
+			}
+		}
+
+		return pattern
+	}
+
+}
