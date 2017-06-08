@@ -22,8 +22,8 @@ package fr.utbm.info.ia51.labworks.formation
 
 import fr.utbm.info.ia51.framework.FrameworkLauncher
 import fr.utbm.info.ia51.framework.gui.BehaviorTypeSelector
-import fr.utbm.info.ia51.general.formation.BodyGuardFormationFactory
 import fr.utbm.info.ia51.general.formation.FifoFormationAssignment
+import fr.utbm.info.ia51.general.formation.VFormationFactory
 import fr.utbm.info.ia51.labworks.formation.^agent.Follower
 import fr.utbm.info.ia51.labworks.formation.^agent.Leader
 import fr.utbm.info.ia51.labworks.formation.environment.WorldModel
@@ -45,7 +45,7 @@ agent PrescribedFormationBoot extends FrameworkLauncher {
 		var type = BehaviorTypeSelector.open
 		if (type !== null) {
 			var formationAssignment = new FifoFormationAssignment
-			var factory = new BodyGuardFormationFactory
+			var factory = new VFormationFactory
 			var formation = factory.build(ANCHOR_COUNT)
 
 			var environment = new WorldModel(WORLD_SIZE_X, WORLD_SIZE_Y)

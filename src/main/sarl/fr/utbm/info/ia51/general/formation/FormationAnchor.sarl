@@ -96,7 +96,8 @@ class FormationAnchor {
 	 * @return the global position of this anchor.
 	 */
 	def getGlobalPosition : Point2f {
-		if (this.bufferGlobalPosition === null) {
+		var position = this.bufferGlobalPosition
+		if (position === null) {
 			var current = this
 			var toRoot = new Vector2f
 			while (current !== null) {
@@ -105,9 +106,10 @@ class FormationAnchor {
 			}
 			var pattern = getPattern
 			toRoot.turn(pattern.globalAngle)
-			this.bufferGlobalPosition = toRoot + pattern.globalPosition
+			position = toRoot + pattern.globalPosition
+			this.bufferGlobalPosition = position
 		}
-		return this.bufferGlobalPosition
+		return position
 	}
 
 	/** Replies the global orientation which may be targeted by an entity
@@ -116,18 +118,19 @@ class FormationAnchor {
 	 * @return the global orientation targeted by the entity on the anchor.
 	 */
 	def getGlobalOrientation : Vector2f {
-		if (this.bufferGlobalOrientation === null) {
+		var orientationVector = this.bufferGlobalOrientation
+		if (orientationVector === null) {
 			var current = this
 			var orientation = 0f
 			while (current !== null) {
 				orientation += current.relativeOrientation
 				current = current.parent
 			}
-			var v = getPattern.globalOrientation
-			v.turn(orientation)
-			this.bufferGlobalOrientation = v
+			orientationVector = getPattern.globalOrientation
+			orientationVector.turn(orientation)
+			this.bufferGlobalOrientation = orientationVector
 		}
-		return this.bufferGlobalOrientation
+		return orientationVector
 	}
 
 	/** Replies the relative position from the parent anchor to this anchor.
