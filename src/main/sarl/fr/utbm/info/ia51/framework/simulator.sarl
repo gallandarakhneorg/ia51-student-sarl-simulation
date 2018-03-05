@@ -49,7 +49,7 @@ agent SimulatorAgent {
 		var spawnMapping = (occurrence.parameters.get(2) as SpawnMapping)
 		var behaviorType = (occurrence.parameters.get(3) as DynamicType)
 				
-		defaultContext.getOrCreateSpaceWithID(spaceId, OpenEventSpaceSpecification)
+		defaultContext.getOrCreateSpaceWithID(OpenEventSpaceSpecification, spaceId)
 
 		waitingAgents = environment.agentBodies.size + 1 
 

@@ -7,7 +7,7 @@
 % SARL is an general-purpose agent programming language.
 % More details on http://www.sarl.io
 %
-% Copyright (C) 2014-2017 the original authors or authors.
+% Copyright (C) 2014-2018 the original authors or authors.
 %
 % Licensed under the Apache License, Version 2.0 (the "License");
 % you may not use this file except in compliance with the License.
@@ -22,7 +22,11 @@
 % limitations under the License.
 %
 \NeedsTeXFormat{LaTeX2e}[1995/12/01]
-\ProvidesPackage{sarl-colorized-listing}[2017/03/18]
+\ProvidesPackage{sarl-colorized-listing}[2018/02/15]
+\newif\ifusesarlcolors\usesarlcolorstrue
+\DeclareOption{sarlcolors}{\global\usesarlcolorstrue}
+\DeclareOption{nosarlcolors}{\global\usesarlcolorsfalse}
+\ProcessOptions*
 \RequirePackage{algpseudocode}
 \RequirePackage{listings}
 \RequirePackage{xspace}
@@ -40,11 +44,12 @@
 \colorlet{SARLstring}{SARLmagenta}
 \colorlet{SARLkeyword}{SARLblue}
 \colorlet{SARLidentifier}{SARLdarkgray}
+\colorlet{SARLlinenumber}{SARLblue}
 \lstdefinelanguage{SARL}{%
    morecomment=[l]{//},
    morecomment=[s]{/*}{*/},
    morestring=[b]",
-   morekeywords={abstract,agent,annotation,artifact,as,behavior,boolean,break,byte,capacity,case,catch,char,class,def,default,dispatch,do,double,else,enum,event,extends,extension,false,final,finally,fires,float,for,if,implements,import,instanceof,int,interface,it,long,native,new,null,occurrence,on,override,package,private,protected,public,requires,return,short,skill,space,static,strictfp,super,switch,synchronized,this,throw,throws,transient,true,try,typeof,uses,val,var,void,volatile,while,with},
+   morekeywords={abstract,agent,annotation,artifact,as,assert,assume,behavior,boolean,break,byte,capacity,case,catch,char,class,continue,def,default,dispatch,do,double,else,enum,event,extends,extension,false,final,finally,fires,float,for,if,implements,import,instanceof,int,interface,it,long,native,new,null,occurrence,on,override,package,private,protected,public,requires,return,short,skill,space,static,strictfp,super,switch,synchronized,this,throw,throws,transient,true,try,typeof,uses,val,var,void,volatile,while,with},
 }
 \lstset{%
    basicstyle=\normalcolor\smaller\smaller, % the size of the fonts that are used for the code
@@ -71,8 +76,10 @@
    tabsize=2, % sets default tabsize to 2 spaces
    title=\lstname, % show the filename of files included with \lstinputlisting; also try caption instead of title
    frameround=fttt, % If framed, use this rounded corner style
+   xleftmargin=20pt,
+   numberstyle=\color{SARLlinenumber}\tiny,
 }
 \newcommand{\code}[1]{\ifmmode\text{\lstinline[basicstyle=\normalcolor]{#1}}\else\lstinline[basicstyle=\normalcolor]{#1}\fi}
 \newcommand{\sarl}{\mbox{SARL}\xspace}
-\newcommand{\sarlversion}{0.5}
+\newcommand{\sarlversion}{0.7}
 \endinput

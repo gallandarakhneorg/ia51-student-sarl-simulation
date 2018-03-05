@@ -26,7 +26,6 @@ import fr.utbm.info.ia51.framework.environment.InfluenceEvent
 import fr.utbm.info.ia51.framework.environment.KillInfluence
 import fr.utbm.info.ia51.framework.environment.MotionInfluence
 import fr.utbm.info.ia51.framework.math.Vector2f
-import fr.utbm.info.ia51.framework.util.AddressUUIDScope
 import io.sarl.core.Behaviors
 import io.sarl.core.DefaultContextInteractions
 import io.sarl.lang.core.Address
@@ -59,8 +58,7 @@ skill StandardPhysicEnvironment implements PhysicEnvironment {
 	
 	def uninstall() {
 		var ^event = new InfluenceEvent(new KillInfluence)
-		^event.source = this.myAdr
-		this.physicSpace.emit(^event, new AddressUUIDScope(this.environmentID))
+		this.physicSpace.emit(this.myAdr.UUID, ^event) [it.UUID == this.environmentID]
 		this.physicSpace = null
 	}
 	
@@ -95,8 +93,7 @@ skill StandardPhysicEnvironment implements PhysicEnvironment {
 			System::arraycopy(otherInfluences, 0, influences, 1, otherInfluences.length)
 		}
 		var ^event = new InfluenceEvent(influences)
-		^event.source = this.myAdr
-		this.physicSpace.emit(^event)[it.UUID == this.environmentID]
+		this.physicSpace.emit(this.myAdr.UUID, ^event) [it.UUID == this.environmentID]
 	}
 	
 }
