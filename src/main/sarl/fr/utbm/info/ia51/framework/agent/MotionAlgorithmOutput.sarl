@@ -48,7 +48,7 @@ class MotionAlgorithmOutput implements Serializable {
 	 * @param outputToCopy is the output tp copy.
 	 */
 	new (outputToCopy : MotionAlgorithmOutput) {
-		// TODO assert(outputToCopy!=null);
+		assert outputToCopy !== null
 		this.type = outputToCopy.type
 		this.linear.set(outputToCopy.linear)
 		this.angular = outputToCopy.angular
@@ -83,7 +83,7 @@ class MotionAlgorithmOutput implements Serializable {
 	 * @param linear
 	 */
 	def setLinear(linear : Vector2f) {
-		// TODO assert(linear!=null);
+		assert linear !== null
 		this.linear.set(linear)
 	}
 	

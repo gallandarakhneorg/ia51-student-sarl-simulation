@@ -60,8 +60,8 @@ agent Environment {
 				this.listeners += o
 			}
 		}
-		setSkill(new DefaultMazeManagerSkill(width, height), typeof(MazeManager))
-		setSkill(new DefaultMazeFrontEndSkill(), typeof(MazeFrontEnd))
+		setSkill(new DefaultMazeManagerSkill(width, height))
+		setSkill(new DefaultMazeFrontEndSkill())
 		this.controller = new Controller(defaultSpace, defaultAddress)
 		var pacmanBody = createPacman
 		this.player = new Player(pacmanBody.agentId, Logger::getLogger(ID.toString))
@@ -127,7 +127,7 @@ agent Environment {
 			this.actions += new MazeChangeQuery(occurrence.source.UUID, occurrence.direction)
 			
 			if (this.actions.size >= bodyCount - 1) {
-				emit(new RunEndOfStep, Scopes.addresses(defaultAddress))
+				emit(new RunEndOfStep) [it == defaultAddress]
 			}
 		}
 	}

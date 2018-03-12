@@ -129,8 +129,8 @@ abstract class AbstractMobileObject extends AbstractSituatedObject implements Mo
 	 * @param simulationDuration is the time during which the motion is applied.
 	 */
 	protected def rotate(rotation : float, simulationDuration : float) {
-		//TODO assert (!Double.isNaN(rotation)) : LocalizedString.getString(getClass(), "INVALID_ROTATION", getName());
-		//TODO assert (!Double.isNaN(simulationDuration)) : LocalizedString.getString(getClass(), "INVALID_DURATION", getName());
+		assert !Double::isNaN(rotation)
+		assert !Double::isNaN(simulationDuration)
 		this.angle += rotation
 		this.currentAngularSpeed = rotation / simulationDuration
 	}

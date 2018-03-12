@@ -189,7 +189,7 @@ class WorldModel extends AbstractEnvironment implements WorldModelStateProvider 
 				0.5f,						// max linear acceleration (m/s)/s
 				MathUtil.PI/4f,				// max angular speed r/s
 				MathUtil.PI/10f,			// max angular acceleration (r/s)/s
-				frustum) // FIXME
+				frustum)
 		body.name = MessageFormat::format("Rabbit #{0}", this.agentBodyNumber + 1)
 		addAgentBody(
 				body,

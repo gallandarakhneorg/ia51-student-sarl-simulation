@@ -161,7 +161,7 @@ final class Resources {
     	}
     	
     	var loader = if (classLoader === null) typeof(Resources).classLoader else classLoader
-    	// TODO assert(loader!=null);
+    	assert loader !== null
     			
     	var url = loader.getResource(resourcePath)
     	
@@ -290,7 +290,7 @@ final class Resources {
     		loader = typeof(Resources).classLoader
     	}
     	
-    	//TODO assert(loader!=null);
+    	assert loader !== null
     	var is = loader.getResourceAsStream(resourcePath)
     	if (is === null) {
     		// Try to find in ./resources sub directory

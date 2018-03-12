@@ -125,8 +125,8 @@ class Rectangle2f extends Shape2f<Rectangle2f> {
 	}
 	
 	private def intersects(a1 : float, a2 : float, b1 : float, b2 : float) : boolean {
-		//TODO assert (a1 <= a2);
-		//TODO assert (b1 <= b2);
+		assert a1 <= a2
+		assert b1 <= b2;
 		(a2 > b1) && (b2 > a1)
 	}
 

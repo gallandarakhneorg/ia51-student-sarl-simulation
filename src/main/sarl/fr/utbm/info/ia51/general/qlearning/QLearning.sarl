@@ -92,7 +92,7 @@ class QLearning<S extends QState, A extends QAction> {
 	 */
 	def forceFeedBack(state : S, action : A, feedbackValue : float) : QFeedback<S> {
 		var result = this.problem.takeAction(state,action)
-		// TODO assert(result!=null);
+		assert result !== null
 		if (!Float::isNaN(feedbackValue)) {
 			result.score = feedbackValue
 		}
@@ -117,7 +117,7 @@ class QLearning<S extends QState, A extends QAction> {
 	 */
 	def getBestAction(state : S) : A {
 		var m = this.qValues.get(state)
-		// TODO assert(m!=null);
+		assert m !== null
 		var bestActions = new ArrayList<A>
 		var bestScore = Float::NEGATIVE_INFINITY
 		for(entry : m.entrySet) {
@@ -129,20 +129,20 @@ class QLearning<S extends QState, A extends QAction> {
 				bestActions += entry.key
 			}
 		}
-		// TODO assert(!bestActions.isEmpty());
+		assert !bestActions.empty
 		return bestActions.get(this.random.nextInt(bestActions.size))
 	}
 	
 	private def getQ(state : S, action : A) : float {
 		var m = this.qValues.get(state)
-		// TODO assert(m!=null);
+		assert m !== null
 		var q = m.get(action)
 		q?.floatValue
 	}
 
 	private def putQ(state : S, action : A, q : float) {
 		var m = this.qValues.get(state)
-		// TODO assert(m!=null);
+		assert m !== null
 		m.put(action, q)
 	}
 

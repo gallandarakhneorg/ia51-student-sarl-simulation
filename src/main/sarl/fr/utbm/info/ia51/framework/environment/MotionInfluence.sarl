@@ -57,7 +57,7 @@ class MotionInfluence extends Influence {
 	 * @param l is the linear influence
 	 */
 	def setLinarInfluence(l : Vector2f) {
-		//TODO assert(l!=null);
+		assert l !== null
 		this.linearInfluence.set(l)
 	}
 		

@@ -55,11 +55,11 @@ public class GUI extends AbstractFrameworkGUI {
 	static var ICON_HEIGHT : int 
 	
 	static val FAKE = {
-		var url = Resources.getResource(typeof(GUI), "rabbit.png") //$NON-NLS-1$
-		//TODO assert(url!=null)
+		var url = Resources.getResource(typeof(GUI), "rabbit.png") // $NON-NLS-1$
+		assert url !== null
 		RABBIT_ICON = new ImageIcon(url)
-		url = Resources::getResource(typeof(GUI), "carrot.png") //$NON-NLS-1$
-		// TODO assert(url!=null);
+		url = Resources::getResource(typeof(GUI), "carrot.png") // $NON-NLS-1$
+		assert url !== null
 		CARROT_ICON = new ImageIcon(url)
 		ICON_WIDTH = RABBIT_ICON.iconWidth
 		ICON_HEIGHT = RABBIT_ICON.iconHeight

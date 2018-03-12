@@ -72,14 +72,14 @@ class SteeringAlignAlgorithm implements AlignAlgorithm {
 	 * under which the rotation is going slower.
 	 */
 	new (stopRadius : float, decelerateRadius : float) {
-		// TODO assert (stopRadius < decelerateRadius);
+		assert stopRadius < decelerateRadius
 		this.stopRadius = stopRadius
 		this.decelerateRadius = decelerateRadius
 	}
 
 	override run(orientation : Vector2f, angularSpeed : float, maxAngular : float,
 		target : Vector2f) : MotionAlgorithmOutput {
-		// TODO assert(maxAngularAcc >= 0f);
+		assert maxAngular >= 0.0f
 		val rotation = orientation .. target
 		val rotationSize = rotation.abs
 

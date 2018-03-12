@@ -55,7 +55,7 @@ abstract class Influence implements Serializable {
 	 * @param emitter is the emitter of the influence.
 	 */
 	package def setEmitter(emitter : UUID) {
-		//TODO assert(emitter!=null);
+		assert emitter !== null
 		this.emitter = emitter
 	}
 

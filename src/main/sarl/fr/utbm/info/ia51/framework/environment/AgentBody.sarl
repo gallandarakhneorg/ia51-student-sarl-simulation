@@ -54,7 +54,7 @@ class AgentBody extends AbstractMobileObject implements Body {
 	new (id : UUID, shape : Shape2f<?>, maxLinearSpeed : float, maxLinearAcceleration : float,
 			maxAngularSpeed : float, maxAngularAcceleration : float, frustum : Frustum) {
 		super(id, shape, maxLinearSpeed, maxLinearAcceleration, maxAngularSpeed, maxAngularAcceleration)
-		//TODO assert (frustum == null || Objects.equals(id, frustum.getOwner()));
+		assert frustum === null || id == frustum.owner
 		this.frustum = frustum
 		this.type = "BODY"
 	}
@@ -180,7 +180,7 @@ class AgentBody extends AbstractMobileObject implements Body {
 	 * @param perceptions
 	 */
 	package def setPerceptions(perceptions : List<Percept>) : void {
-		// TODO assert(perceptions!=null);
+		assert perceptions !== null
 		this.perceptions = perceptions
 	}
 

@@ -50,7 +50,7 @@ class DelegateEvadeAlgorithm implements EvadeAlgorithm {
 	val flee : FleeAlgorithm
 	
 	new (flee : FleeAlgorithm) {
-		// TODO assert flee != null
+		assert flee !== null
 		this.flee = flee
 	}
 

@@ -49,7 +49,7 @@ abstract class AbstractSituatedObject implements SituatedObject, Serializable {
 	 * @param position is the position of the object.
 	 */
 	new (id : UUID, shape : Shape2f<?>, position : Point2f = null) {
-		//TODO assert (id != null);
+		assert id !== null
 		this.id = id
 		this.shape = shape
 		if (position !== null) {
@@ -63,7 +63,7 @@ abstract class AbstractSituatedObject implements SituatedObject, Serializable {
 	 * @param y is the position of the object.
 	 */
 	new (id : UUID, shape : Shape2f<?>, x : float, y : float) {
-		// TODO assert (id != null);
+		assert id !== null
 		this.id = id
 		this.shape = shape
 		this.position.set(x, y)

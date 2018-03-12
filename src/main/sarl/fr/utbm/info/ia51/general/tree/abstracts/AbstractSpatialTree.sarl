@@ -48,7 +48,7 @@ abstract class AbstractSpatialTree<N extends SpatialTreeNode<N, D>, D extends Sh
 	 * @param factory the node factory to use.
 	 */
 	new (factory : SpatialTreeNodeFactory<N>) {
-		//TODO assert (factory != null);
+		assert factory !== null
 		this.factory = factory;
 	}
 	

@@ -133,17 +133,17 @@ class WorldModel extends AbstractEnvironment implements WorldModelStateProvider 
 		// Consider other influences
 		for (influence : otherInfluences) {
 			if (influence instanceof RemoveInfluence) {
-				// TODO assert (this.mouseTarget != null);
+				assert this.mouseTarget !== null
 				this.dataStructure.removeData(this.mouseTarget)
 				this.mouseTarget = null
 				stateChanged
 			} else if (influence instanceof TargetAdditionInfluence) {
-				//TODO assert (this.mouseTarget == null);
+				assert this.mouseTarget === null
 				this.mouseTarget = new MouseTarget(influence.position.x, influence.position.y)
 				this.dataStructure.addData(this.mouseTarget)
 				stateChanged
 			} else if (influence instanceof TeletransportInfluence) {
-				//TODO assert (this.mouseTarget != null);
+				assert this.mouseTarget !== null
 				this.dataStructure.removeData(this.mouseTarget)
 				this.mouseTarget.setMousePosition(
 						influence.position,
@@ -194,11 +194,11 @@ class WorldModel extends AbstractEnvironment implements WorldModelStateProvider 
 		for (action : actionTree.data) {
 			var obj = action.object
 			if (!action.empty && obj !== null) {
-				var b = this.dataStructure.removeData(obj)
-				// TODO assert (b) : "Object cannot be removed from quadtree: " + obj;
+				var b1 = this.dataStructure.removeData(obj)
+				assert b1
 				move(obj, action.linearMotion, action.angularMotion)
-				b = this.dataStructure.addData(obj)
-				// TODO assert (b) : "Object cannot be added in quadtree: " + obj;
+				var b2 = this.dataStructure.addData(obj)
+				assert b2
 			}
 		}
 	}

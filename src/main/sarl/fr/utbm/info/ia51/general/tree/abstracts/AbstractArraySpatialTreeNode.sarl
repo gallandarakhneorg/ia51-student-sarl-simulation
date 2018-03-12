@@ -74,7 +74,7 @@ abstract class AbstractArraySpatialTreeNode<N extends AbstractArraySpatialTreeNo
 	}
 
 	private def addInChildWhenPossible(data : D) : boolean {
-		// TODO assert (this.children != null);
+		assert this.children !== null
 		var dataShape = data.shape
 		var selectedChild : N
 		for (child : this.children) {
@@ -118,7 +118,7 @@ abstract class AbstractArraySpatialTreeNode<N extends AbstractArraySpatialTreeNo
 			}
 			for (i : 0..<this.children.length) {
 				if (this.children.get(i) !== null) {
-					// TODO assert (this.children[i].getDataCount() == 0);
+					assert this.children.get(i).dataCount == 0
 					this.children.get(i).parent = null
 					this.children.set(i, null)
 				}
@@ -130,7 +130,7 @@ abstract class AbstractArraySpatialTreeNode<N extends AbstractArraySpatialTreeNo
 	}
 
 	private def removeFromChildWhenPossible(data : D) : boolean {
-		// TODO assert (this.children != null);
+		assert this.children !== null
 		var dataShape = data.shape
 		var selectedChild : N
 		for (child : this.children) {

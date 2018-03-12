@@ -47,6 +47,7 @@ package class DefaultMazeSpaceImpl implements MazeSpace {
 	 * @param commmunicationSpace - the communication space.
 	 */
 	new (id : SpaceID, communicationSpace : OpenEventSpace, creator : EventListener) {
+		assert communicationSpace !== null
 		this.creator = creator
 		this.communicationSpace = communicationSpace
 		this.spaceID = id
@@ -71,7 +72,7 @@ package class DefaultMazeSpaceImpl implements MazeSpace {
 
 	def notifyPerception(perception : Perception) {
 		var id = perception.bodyId
-		this.communicationSpace.emit(perception.source.UUID,
+		this.communicationSpace?.emit(perception.source.UUID,
 			perception
 		) [it.UUID == id]
 	}
