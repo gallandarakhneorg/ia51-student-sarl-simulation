@@ -80,7 +80,7 @@ class QuadTreeNode<D extends ShapedObject> extends AbstractArraySpatialTreeNode<
 		}
 		if (this.children.get(1) === null) {
 			var bounds = this.bounds
-			assert bounds !== null
+			//TODO assert bounds !== null
 			var lower = bounds.lower
 			var upper = bounds.upper
 			var center = bounds.center
@@ -92,7 +92,7 @@ class QuadTreeNode<D extends ShapedObject> extends AbstractArraySpatialTreeNode<
 		}
 		if (this.children.get(2) === null) {
 			var bounds = this.bounds
-			assert bounds !== null
+			//TODO assert bounds !== null
 			var lower = bounds.lower
 			var upper = bounds.upper
 			var center = bounds.center
@@ -104,7 +104,7 @@ class QuadTreeNode<D extends ShapedObject> extends AbstractArraySpatialTreeNode<
 		}
 		if (this.children.get(3) === null) {
 			var bounds = this.bounds
-			assert bounds !== null
+			//TODO assert bounds !== null
 			var upper = bounds.upper
 			var center = bounds.center
 			this.children.set(3, newNodeInstance(new Rectangle2f(center, upper)))

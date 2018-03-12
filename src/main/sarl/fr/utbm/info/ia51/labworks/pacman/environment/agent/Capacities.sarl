@@ -290,7 +290,7 @@ skill DefaultMazeFrontEndSkill implements MazeFrontEnd {
 	
 	def sendPerception(time : int, bodyID : UUID, objects : List<PacmanObject>, position : Point2i) {
 		var p = new Perception(time, bodyID, objects, position)
-		this.mazeSpace.notifyPerception(p)
+		this.mazeSpace.notifyPerception(owner.ID, p)
 	}
 	
 }

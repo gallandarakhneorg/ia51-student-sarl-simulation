@@ -70,11 +70,9 @@ package class DefaultMazeSpaceImpl implements MazeSpace {
 		this.communicationSpace.unregister(binder)
 	}
 
-	def notifyPerception(perception : Perception) {
+	def notifyPerception(sender : UUID, perception : Perception) {
 		var id = perception.bodyId
-		this.communicationSpace?.emit(perception.source.UUID,
-			perception
-		) [it.UUID == id]
+		this.communicationSpace.emit(sender, perception) [it.UUID == id]
 	}
 
 	def influence(influenceTime : int, emitter : UUID, influence : Direction) {

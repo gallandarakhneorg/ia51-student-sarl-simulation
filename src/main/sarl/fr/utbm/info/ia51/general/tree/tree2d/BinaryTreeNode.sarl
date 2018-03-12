@@ -82,7 +82,7 @@ class BinaryTreeNode<D extends ShapedObject> extends AbstractArraySpatialTreeNod
 		}
 		if (this.children.get(1) === null) {
 			var bounds = this.bounds
-			assert bounds !== null
+			//TODO assert bounds !== null
 			var childBounds = this.separationLine.getUpperOrRightBounds(bounds)
 			this.children.set(1, childBounds.newNodeInstance)
 			this.children.get(1).parent = this

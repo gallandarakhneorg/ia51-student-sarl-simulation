@@ -53,9 +53,10 @@ interface MazeSpace extends Space {
 
 	/** Give the perceptions to the agents that is owning the given body.
 	 *
+	 * @param sender - the identifier of the sender.
 	 * @param perception - the event to give to the agent.
 	 */
-	def notifyPerception(perception : Perception)
+	def notifyPerception(sender : UUID, perception : Perception)
 
 	/** Emit an influence for the given agent.
 	 *
