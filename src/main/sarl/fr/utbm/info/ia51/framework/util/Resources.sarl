@@ -63,7 +63,8 @@ final class Resources {
      * not found in class paths.
      */
     static def getResource(path : String) : URL {
-    	return getResource(null as ClassLoader, path)
+    	val cl : ClassLoader = null
+    	return getResource(cl, path)
     }
 
    	/**
@@ -92,7 +93,7 @@ final class Resources {
      * not found in class paths.
      * @since 6.2
      */
-    public static def getResource(classLoader : ClassLoader, packagename : Package, path : String) : URL {
+    static def getResource(classLoader : ClassLoader, packagename : Package, path : String) : URL {
     	if (packagename === null || path === null) return null
     	var b = new StringBuilder
     	b.append(packagename.name.replaceAll(
@@ -188,7 +189,8 @@ final class Resources {
      * not found in class paths.
      */
     static def getResourceAsStream(path : String) : InputStream {
-    	return getResourceAsStream(null as ClassLoader, path)
+    	val cl : ClassLoader = null
+    	return getResourceAsStream(cl, path)
     }
     
    	/**

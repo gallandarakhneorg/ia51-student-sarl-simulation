@@ -70,6 +70,14 @@ class FormationPattern {
 			this.leaderAnchor = anchor
 		}
 	}
+
+	/** Replies the leader anchor if one is defined.
+	 * 
+	 * @return the leader anchor or {@code null}.
+	 */
+	def getLeaderAnchor : FormationAnchor {
+		this.leaderAnchor
+	}
 	
 	/** Replies the anchors in the formation body.
 	 * 

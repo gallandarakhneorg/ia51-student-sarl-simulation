@@ -291,7 +291,7 @@ class Maze {
 	def getSuperPowerAccessorFor(id : UUID) : SuperPowerAccessor {
 		var body = this.bodies.get(id)
 		if (body instanceof PacmanBody) {
-			val pacman = body as PacmanBody
+			val pacman : PacmanBody = body
 			return new SuperPowerAccessor() {
 				def resetSuperPower {
 					pacman.resetSuperPower

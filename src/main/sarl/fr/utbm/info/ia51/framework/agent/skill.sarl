@@ -29,9 +29,9 @@ import fr.utbm.info.ia51.framework.math.Vector2f
 import io.sarl.core.Behaviors
 import io.sarl.core.DefaultContextInteractions
 import io.sarl.lang.core.Address
-import io.sarl.util.OpenEventSpace
 import java.lang.reflect.Array
 import java.util.UUID
+import io.sarl.core.OpenEventSpace
 
 skill StandardPhysicEnvironment implements PhysicEnvironment {
 

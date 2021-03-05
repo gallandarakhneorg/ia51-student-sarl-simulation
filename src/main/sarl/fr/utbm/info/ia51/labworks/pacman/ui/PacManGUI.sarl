@@ -123,6 +123,7 @@ class PacManGUI extends JFrame implements KeyListener, EnvironmentListener {
 		this.preferredSize = new Dimension(600,600)
 		this.defaultCloseOperation = JFrame::EXIT_ON_CLOSE
 		pack
+		requestFocus
 	}
 
 	def bindPlayer(player : Player) : void {

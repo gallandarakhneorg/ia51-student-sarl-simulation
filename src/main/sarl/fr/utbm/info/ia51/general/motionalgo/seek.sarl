@@ -37,7 +37,8 @@ interface SeekAlgorithm {
 		 * @param target is the point to flee.
 		 * @return the behaviour output.
 		 */
-	def run(position : Point2f, linearSpeed : float, maxLinear : float, target : Point2f) : MotionAlgorithmOutput
+	def run(position : Point2f, linearSpeed : float,
+		maxLinear : float, target : Point2f) : MotionAlgorithmOutput
 
 }
 

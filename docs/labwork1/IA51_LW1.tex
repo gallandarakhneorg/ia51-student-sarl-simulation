@@ -4,17 +4,27 @@
 % http://www.arakhne.org/autolatex
 %----------------------------------------
 
-\documentclass[article,english,nodocumentinfo]{multiagentfrreport}
+\documentclass[article,english,nodocumentinfo]{utbmciadreport}
 
 \input{../common/preamble.tex}
 
-\declaredocument{IA51 Lab Work \#1}{Pacman Game}{UTBM-INFO-IA51-LW1}
+\declaredocument{Introduction to SARL and Creation of a PacMan Game}{Lab Works \#1}{UTBM-INFO-IA51-LW1}
 
-\updateversion{5.0}{\makedate{03}{05}{2015}}{First release on Github}{\upmpublic}
-\updateversion{6.0}{\makedate{21}{03}{2017}}{Update for IA51.}{\upmpublic}
-\updateversion{7.0}{\makedate{03}{03}{2018}}{Update SARL introduction.}{\upmpublic}
+\addauthorvalidator*[St\'ephane Galland]{St{\'e}phane}{Galland}{Teacher}
+
+\updateversion{1.0}{\makedate{20}{01}{2016}}{First release on Github}{\upmpublic}
+\incversion{\makedate{19}{03}{2020}}{Update the format}{\upmpublic}
+
+\newif\ifCODESKELETON
+\CODESKELETONtrue
+
+\newif\ifJANUSINCLASSPATH
+\JANUSINCLASSPATHfalse
+
 
 \gdef\skeletonName{\texttt{\mbox{LW1\_IA51\_skeleton\string.jar}}}
+
+
 
 \begin{document}
 
@@ -44,39 +54,63 @@ You shall learn:
 	\end{itemize}
 \end{itemize}
 
-\section{First Step: prepare the development environment}
+\input{../common/install}
 
-In this section, you will find the tasks to do for preparing your development environment.
+\section{Create a project}
 
-\begin{emphbox}
-Recommended version of SARL : \sarlversion
-\end{emphbox}
+For Linux and MacOS, there is nothing special to do.
 
+For Windows operating system, I recommend to use the Maven (\url{http://maven.apache.org}) system in order to solve incompatiblities in URL computation within the Eclipse framework.
+
+For creating a SARL project on Windows, you have to:
 \begin{enumerate}
-\item Download the \Emph{Eclipse product} that contains the compilation tools for the SARL programming language : \url{http://www.sarl.io}
-\item Uncompress the Eclipse product for SARL.
-\item Launch the downloaded Eclipse product.
-\item Open the wizard for creating a SARL project, with the menu: \\
-	\texttt{> File > New > Project > SARL > Project}
-\item Enter the name of the project.
-%\item Click on the tab with the name \code{Libraries}.
-%\item \textcolor{red}{In the list of the libraries, remove the \code{SARL Libraries}.}
-%\item \textcolor{red}{In the list of the libraries, add the \code{Janus Libraries}} (the skeletons that are provided for this lab work has a dependency to an class that is provided by the Janus libraries).
-\item Click on "Finish", the SARL project should be created.
-\item You must ensure that the configuration of your SARL project is correct:
-	\begin{enumerate}[a]
-	\item Open the dialog of the properties of the SARL project by clicking on: \\
-		\texttt{Right click on project > Properties > SARL > Compiler > Output Folder}
-	\item Check if the field ``Directory'' is set to a source folder that is existing in your SARL project. If not change the property with): \\
-		\texttt{src/main/generated-sources/sarl}
-	\end{enumerate}
+\item Open the dialog box, "File" $>$ "New" $>$ "Project";
+\item Select the type of project: "Maven" $>$ "SARL Maven Project"; Click on "Next";
+\item Check the box "Create a simple project"; Click on "Next";
+\item Enter a group id and an artifact id; Click on "Finish";
+\item Open the file "pom.xml" and edit it in order to add the following dependency:
+\texttt{\string<dependencies\string>}\\
+\texttt{\string<dependency\string>}\\
+\texttt{\string<groupId\string>io.janusproject\string</groupId\string>}\\
+\texttt{\string<artifactId\string>io.janusproject.kernel\string</artifactId\string>}\\
+\texttt{\string<version\string>2.0.10.0\string</version\string>}\\
+\texttt{\string</dependency\string>}\\
+\texttt{\string</dependencies\string>}
+\item Right click on the project name $>$ "Maven" $>$ "Update project..."
 \end{enumerate}
 
-Your Eclipse is now ready for the lab work session. You should now install the code skeleton provided by the teachers.
+\section{Introduction to the SARL Language}
 
-\section{Part 1: Introduction to SARL}
+The following sections describe the work to be done during this lab work session regarding the introduction to the SARL language.
 
-The following sections describe the work to be done during this lab work session.
+SARL is a statically-typed agent-programming language.
+It aims at providing the fundamental abstractions for dealing with concurrency, distribution, interaction, decentralization, reactivity, autonomy and dynamic reconfiguration.
+These high-level features are now considered as the major requirements for an easy and practical implementation of modern complex software applications that are including intelligent behaviors.
+Authors of SARL are convinced that the agent-oriented paradigm holds the keys to effectively meet this challenge.
+
+Syntactically and semantically SARL has its roots in the Java programming language but improves on many aspects:
+\begin{description}
+\item[Agent specific statements] provide specific statements for agent programming (\href{http://www.sarl.io/docs/official/index.html\#5-2-agent-oriented-programming}{documentation});
+\item[Type inference] you rarely need to write down type signatures anymore (\href{http://www.sarl.io/docs/official/reference/GeneralSyntax.html}{documentation});
+\item[Lambda expressions] concise syntax for anonymous function literals (\href{http://www.sarl.io/docs/official/reference/general/Lambda.html}{documentation});
+\item[Operator overloading] make your libraries even more expressive (\href{http://www.sarl.io/docs/official/reference/general/Operators.html}{documentation});
+\item[Extension methods] enhance closed types with new functionality (\href{http://www.sarl.io/docs/official/reference/general/Extension.html}{documentation});
+\item[Powerful switch expressions] type based switching with implicit casts (\href{http://www.sarl.io/docs/official/reference/general/SwitchExpression.html}{documentation});
+\item[No statements] everything is an expression (\href{http://www.sarl.io/docs/official/reference/GeneralSyntax.html\#4-details-on-the-sarl-language-elements}{documentation});
+\item[Full support for Java generics] including all conformance and conversion rules;
+\item[Translates to Java not bytecode] understand what is going on and use your code for platforms such as Android or GWT.
+\end{description}
+
+Unlike several of the other JVM languages, SARL has zero interoperability issues with Java: everything you write interacts with Java exactly as expected.
+At the same time, SARL is much more concise, readable and expressive.
+
+Of course, you can call SARL methods from Java, too, in a completely transparent way.
+Furthermore, SARL provides a modern Eclipse-based IDE closely integrated with the Eclipse Java Development Tools (JDT), including features like call-hierarchies, rename refactoring, debugging and many more.
+
+Nevertheless, and even if SARL is closely related to Java, the SARL compiler is able to generate code for other target languages, e.g. Python.
+
+For a brief comparison between SARL, Java, Xtend and Scala languages, see the Section "\href{http://www.sarl.io/docs/official/reference/OOP.html\#1-comparison-between-sarl-and-other-languages}{Comparison between SARL, Java and Xtend}".
+
 
 \subsection{First Agent}
 
@@ -92,13 +126,27 @@ You should:
 For running the agent, you should:
 \begin{enumerate}[a)]
 \item Open the dialog box of the ``Run Configurations''.
-\item On the left side, click on ``SARL Application''.
+\item On the left side, click on ``SARL Agent''.
 \item Click on the ``New launch configuration'' button.
 \item On the right side, select the project and the agent to launch.
 \item Click on ``Run''.
 \end{enumerate}
 
 \Emph{It is recommended to put a breakpoint in the event handler, and run the agent in debug mode.}
+
+When launching, if you have an error, such "Boot class not found", please create your project as a SARL Maven project.
+If the error is still present, then you could launch the SARL program as a standard Java application:
+\begin{enumerate}
+\item Open the dialog box of the ``Run Configurations''.
+\item On the left side, click on ``Java Application''.
+\item Click on the ``New launch configuration'' button.
+\item On the right side, select the project.
+\item In the field "Main class", enter: \texttt{io.janusproject.Boot}
+\item Open the tab "Arguments", and enter the following command line argument into the "Program arguments" field: \\
+	\texttt{-o --nologo the\_package\_of\_your\_agent.name\_of\_your\_agent} \\
+	where \texttt{the\_package\_of\_your\_agent.name\_of\_your\_agent} is the fully qualified name of your agent.
+\item Click on ``Run''.
+\end{enumerate}
 
 \subsection{Use the Logging Buildin Capacity}
 
@@ -170,6 +218,30 @@ You should:
 \item update \code{Initialize} event handler of \code{Agent3} for defining its skill that is corresponding to the \code{SayHello} capacity. It should speak French.
 \end{enumerate}
 
+\subsection{Contract Net Protocol (optional)}
+
+In this excercise, you must define a multiagent system that is running a Contract Net Protocol:
+\begin{enumerate}
+\item A customer wants to by a product.
+\item The customer sends a request to a broker for finder the best provider.
+\item The broker asks to a couple of provider they offers for the product.
+\item The broker selects the best offer.
+\item The broker notifies the selected provider about its acceptance with the ID of the customer.
+\item The broker notifies the not selected providers about their rejections.
+\item The broker notifies the customer with the ID of the provider.
+\end{enumerate}
+
+You should:
+\begin{enumerate}[a)]
+\item Define the capacity of the provider.
+\item Define the capacities of the broker.
+\item Write the provider code.
+\item Write the broker code.
+\item Write the customer code.
+\end{enumerate}
+
+
+
 \section{Part 2: PacMan simulator}
 
 \subsection{Installation of the Code Skeleton}
@@ -187,9 +259,14 @@ The steps to follow for installing the code skeleton are:
 	\texttt{Menu > Project > Clean}
 \end{enumerate}
 
-Figure \figref{eclipse_project_structure} on the page \figpageref{eclipse_project_structure} gives an example of the structure of the SARL project that you should obtain.
+Figure \ref{fig:eclipse_project_structure} on the page \pageref{fig:eclipse_project_structure} gives an example of the structure of the SARL project that you should obtain.
 
-\mfigure[p]{width=.33\linewidth}{eclipse_project_structure}{Example of the structure of a SARL project}{eclipse_project_structure}
+\begin{figure}[p]
+	\centering
+	\includegraphics[width=.33\linewidth]{eclipse_project_structure}
+	\caption{Example of the structure of a SARL project}
+	\label{fig:eclipse_project_structure}
+\end{figure}
 
 \subsection{General Architecture of the Pacman Simulator}
 
@@ -197,14 +274,16 @@ The code skeleton provides the implementation of basic simulator architecture, b
 \begin{itemize}
 \item The Environment is supported by a specific agent in order to benefit of the event-based communication provided by the \sarl language.
 \item The definition of the environment content is the \code{Maze} class, which is an internal attribute of the environment agent.
-\item Figure \figref{simulator:arch} shows a general overview on the architecture.
+\item Figure \ref{fig:simulator:arch} shows a general overview on the architecture.
 \end{itemize}
 
-\begin{mfigures}{General Architecture of the Simulator}{simulator:arch}
-	\msubfigure{width=.4\linewidth}{arch1}{Sending perceptions to agents}
+\begin{figure}
+	\includegraphics[width=.4\linewidth]{arch1}
 	\hspace{1cm}
-	\msubfigure{width=.4\linewidth}{arch2}{Receiving influences from agents}
-\end{mfigures}
+	\includegraphics[width=.4\linewidth]{arch2}
+	\caption{General Architecture of the Simulator. Left: sending perceptions to agents. Right: receiving influences from agents}
+	\label{fig:simulator:arch}
+\end{figure}
 
 \subsection{Environment Perceptions}
 

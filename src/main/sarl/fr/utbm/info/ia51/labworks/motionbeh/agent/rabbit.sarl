@@ -81,7 +81,7 @@ agent Rabbit extends AbstractAnimat {
 			).emitInfluence
 		}
 		else {
-//			doNothing
+			doNothing
 //			// run the wander behaviour
 			this.wanderBehaviour.run(
 				occurrence.body.position,

@@ -304,7 +304,11 @@ class WorldModel extends AbstractEnvironment implements WorldModelStateProvider 
 		 * @param angularMotion
 		 */
 		new (object : SituatedObject, linearMotion : Vector2f, angularMotion : float ) {
-			this.object = if (object instanceof MobileObject) object as MobileObject else null
+			if (object instanceof MobileObject) {
+				this.object = object
+			} else {
+				this.object = null
+			}
 			this.linearMotion = linearMotion
 			this.angularMotion = angularMotion
 			this.shape = new MotionHull2f(object.position, linearMotion, object.shape.maxDemiSize)

@@ -22,10 +22,7 @@ package fr.utbm.info.ia51.labworks.pacman.environment.^agent
 
 import io.sarl.lang.core.Address
 import io.sarl.lang.core.EventSpace
-import io.sarl.util.Scopes
-
 import java.util.concurrent.atomic.AtomicBoolean
-
 
 /**
  * Control the simulation.

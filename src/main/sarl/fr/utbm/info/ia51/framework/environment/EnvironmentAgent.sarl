@@ -26,10 +26,10 @@ import io.sarl.core.DefaultContextInteractions
 import io.sarl.core.Initialize
 import io.sarl.core.Lifecycle
 import io.sarl.lang.core.Address
-import io.sarl.util.OpenEventSpace
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import io.sarl.core.OpenEventSpace
 
 /** This agent is managing the physic space. 
  *

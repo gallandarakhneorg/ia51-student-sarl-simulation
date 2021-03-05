@@ -21,11 +21,11 @@
 package fr.utbm.info.ia51.labworks.pacman.environment.^agent
 
 import fr.utbm.info.ia51.labworks.pacman.environment.maze.Direction
+import io.sarl.core.OpenEventSpace
 import io.sarl.lang.core.EventListener
 import io.sarl.lang.core.SpaceID
-import io.sarl.lang.util.SynchronizedSet
-import io.sarl.util.OpenEventSpace
 import java.util.UUID
+import io.sarl.util.ConcurrentSet
 
 /** Abstract implementation of a distributed space.
  *
@@ -88,9 +88,25 @@ package class DefaultMazeSpaceImpl implements MazeSpace {
 	def getSpaceID : SpaceID {
 		return this.spaceID
 	}
-
-	def getParticipants : SynchronizedSet<UUID> {
-		return this.communicationSpace.participants
+	
+	def forEachStrongParticipant(callback : (UUID)=>void) {
+		this.communicationSpace.forEachStrongParticipant(callback)
 	}
-
+	
+	def forEachWeakParticipant(callback : (UUID)=>void) {
+		this.communicationSpace.forEachWeakParticipant(callback)
+	}
+	
+	def getNumberOfStrongParticipants : int {
+		this.communicationSpace.numberOfStrongParticipants
+	}
+	
+	def getNumberOfWeakParticipants : int {
+		this.communicationSpace.numberOfWeakParticipants
+	}
+	
+	def isPseudoEmpty(id : UUID) : boolean {
+		this.communicationSpace.isPseudoEmpty(id)
+	}
+	
 }
