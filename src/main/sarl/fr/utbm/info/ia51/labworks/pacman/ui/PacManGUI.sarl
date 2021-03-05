@@ -52,6 +52,7 @@ import javax.swing.JPanel
 import javax.swing.JScrollPane
 
 import static java.lang.Math.*
+import java.awt.geom.Path2D
 
 /**
  * Swing UI for the PacMan game. 
@@ -295,25 +296,16 @@ class PacManGUI extends JFrame implements KeyListener, EnvironmentListener {
 							middle -= 2
 							bottom2 += 2
 						}
-						var xx : int[] = #{
-								lleft,
-								lleft,
-								left,
-								middle,
-								right,
-								rright,
-								rright
-						}
-						var yy  : int[] = #{
-								up,
-								bottom1,
-								bottom2,
-								bottom1,
-								bottom2,
-								bottom1,
-								up
-						}
-						g2d.fillPolygon(xx, yy, min(xx.length,yy.length))
+						val path = new Path2D.Float
+						path.moveTo(lleft, up)
+						path.lineTo(lleft, bottom1)
+						path.lineTo(left, bottom2)
+						path.lineTo(middle, bottom1)
+						path.lineTo(right, bottom2)
+						path.lineTo(rright, bottom1)
+						path.lineTo(rright, up)
+						path.closePath
+						g2d.fill(path)
 
 						var dx = 0
 						var dy = 0
