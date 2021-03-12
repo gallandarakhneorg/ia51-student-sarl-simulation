@@ -1,0 +1,135 @@
+package fr.utbm.info.ia51.labworks.introduction
+
+import io.sarl.core.AgentSpawned
+import io.sarl.core.DefaultContextInteractions
+import io.sarl.core.Initialize
+import io.sarl.core.Lifecycle
+import io.sarl.core.Logging
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicInteger
+
+event Hello
+
+capacity SayHello {
+	def sayHelloToUser
+}
+
+skill SayHelloSkill implements SayHello {
+	uses Logging
+	def sayHelloToUser {
+		info("Hello")
+	}
+}
+
+skill DireBonjourSkill implements SayHello {
+	uses Logging
+	def sayHelloToUser {
+		info("Bonjour")
+	}
+}
+
+skill BuenasDiasSkill implements SayHello {
+	uses Logging
+	def sayHelloToUser {
+		info("Buenas Dias")
+	}
+}
+
+agent Agent1_version1 {
+	uses Logging, Lifecycle, DefaultContextInteractions
+	uses SayHello
+
+	var spawnedReceived = new AtomicInteger(0)
+	var agent2Identifier : UUID
+
+	on Initialize {
+		loggingName = "Agent-1"
+		sayHelloToUser
+		// Compute the ID of Agent2 and spawn Agent2 with this ID
+		this.agent2Identifier = UUID::randomUUID
+		typeof(Agent2).spawnInContextWithID(this.agent2Identifier, defaultContext)
+		typeof(Agent3).spawn
+	}
+
+	on AgentSpawned {
+		var v = spawnedReceived.incrementAndGet
+		if (v == 2) {
+			emit(new Hello) [
+				it.UUID == this.agent2Identifier
+			]
+			killMe
+		}
+	}
+
+}
+
+
+
+
+
+
+
+agent Agent1_version2 {
+	uses Logging, Lifecycle, DefaultContextInteractions
+	uses SayHello
+
+	var spawnedReceived = new AtomicInteger(0)
+	var agent2Identifier : UUID
+
+	on Initialize {
+		// Agent learn how to say hello through a new know-how (skill)
+		setSkill(new SayHelloSkill)
+		loggingName = "Agent-1"
+		sayHelloToUser
+		// Compute the ID of Agent2 and spawn Agent2 with this ID
+		this.agent2Identifier = UUID::randomUUID
+		typeof(Agent2).spawnInContextWithID(this.agent2Identifier, defaultContext)
+		typeof(Agent3).spawn
+	}
+
+	on AgentSpawned {
+		var v = spawnedReceived.incrementAndGet
+		if (v == 2) {
+			emit(new Hello) [
+				it.UUID == this.agent2Identifier
+			]
+			killMe
+		}
+	}
+
+}
+
+
+agent Agent2 {
+	uses Logging, Lifecycle
+	uses SayHello
+
+	on Initialize {
+		setSkill(new DireBonjourSkill)
+		loggingName = "Agent-2"
+		sayHelloToUser
+	}
+
+	on Hello {
+		// occurrence : is the instance of the received event. Here, it is of type "Hello".
+		info("An agent said \"hello\" to me: " + occurrence)
+		killMe
+	}
+}
+
+agent Agent3 {
+	uses Logging, Lifecycle
+	uses SayHello
+
+	on Initialize {
+		setSkill(new BuenasDiasSkill)
+		loggingName = "Agent-3"
+		sayHelloToUser
+	}
+
+	on Hello {
+		// occurrence : is the instance of the received event. Here, it is of type "Hello".
+		info("An agent said \"hello\" to me: " + occurrence)
+		killMe
+	}
+}

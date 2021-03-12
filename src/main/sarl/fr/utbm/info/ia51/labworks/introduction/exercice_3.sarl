@@ -1,0 +1,69 @@
+package fr.utbm.info.ia51.labworks.introduction
+
+import io.sarl.core.Initialize
+import io.sarl.core.Lifecycle
+import io.sarl.core.Logging
+import io.sarl.core.DefaultContextInteractions
+
+agent Agent2 {
+	uses Logging, Lifecycle
+
+	on Initialize {
+		loggingName = "Agent-2"
+		info("Hello")
+		killMe
+	}
+}
+
+agent Agent3 {
+	uses Logging, Lifecycle
+
+	on Initialize {
+		loggingName = "Agent-3"
+		info("Hello")
+		killMe
+	}
+}
+
+
+agent Agent1_version1 {
+	uses Logging, Lifecycle
+	on Initialize {
+		loggingName = "Agent-1"
+		info("Hello")
+		
+		spawn(typeof(Agent2))
+		spawn(typeof(Agent3))
+		
+		killMe
+	}
+}
+
+agent Agent1_version2 {
+	uses Logging, Lifecycle
+
+	on Initialize {
+		loggingName = "Agent-1"
+		info("Hello")
+		
+		// Creation is done in parallel
+		spawn(typeof(Agent2))
+		spawn(Agent3)
+		
+		killMe
+	}
+}
+
+agent Agent1_version3 {
+	uses Logging, Lifecycle
+
+	on Initialize {
+		loggingName = "Agent-1"
+		info("Hello")
+		// Use the extension method syntax: first argument is moved outside the parentheses
+		// and before the function name. It is equivalent to: spawn(typeof(Agent3))
+		typeof(Agent2).spawn
+		Agent3.spawn 
+		killMe
+	}
+}

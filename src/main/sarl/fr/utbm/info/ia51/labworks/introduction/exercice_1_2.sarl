@@ -1,0 +1,55 @@
+package fr.utbm.info.ia51.labworks.introduction
+
+import io.sarl.core.Initialize
+import io.sarl.core.Logging
+import io.sarl.core.Lifecycle
+import io.sarl.core.Destroy
+
+/** Hello World.
+ * Version 1: Using system console
+ */
+agent HelloWorld1 {
+	
+	on Initialize {
+		System.out.println("Hello world")
+	}
+	
+	/*on Destroy {
+		
+	}*/
+
+}
+
+/** Hello World.
+ * Version 2: Using agent's capacity for logging
+ */
+agent HelloWorld2 {
+
+	uses Logging
+
+	on Initialize {
+		setLoggingName("Agent-1")
+		loggingName = "Agent-1b"
+		
+		info("Hello world")
+	}
+
+}
+
+/** Hello World.
+ * Version 3: Using agent's capacity for logging and killing of the agent.
+ */
+agent HelloWorld3 {
+
+	uses Logging
+	uses Lifecycle
+
+	on Initialize {
+		setLoggingName("Agent-1")
+		loggingName = "Agent-1b"
+		
+		info("Hello world")
+		killMe
+	}
+
+}

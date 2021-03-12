@@ -1,0 +1,148 @@
+package fr.utbm.info.ia51.labworks.introduction
+
+import io.sarl.core.Initialize
+import io.sarl.core.Lifecycle
+import io.sarl.core.Logging
+import io.sarl.core.DefaultContextInteractions
+import io.sarl.core.Schedules
+import io.sarl.core.AgentSpawned
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
+
+event Hello
+
+event Hello1 {
+	var data : String
+}
+
+
+
+agent Agent1_version1 {
+	uses Logging, Lifecycle, DefaultContextInteractions
+	on Initialize {
+		loggingName = "Agent-1"
+		info("I'm starting")
+		typeof(Agent2).spawn
+		typeof(Agent3).spawn
+		emit(new Hello) // Problem related to asynchronous spawning: Agent2/Agent3 may be not alive
+		killMe
+	}
+}
+
+agent Agent2 {
+	uses Logging, Lifecycle
+	on Initialize {
+		loggingName = "Agent-2"
+		info("I'm starting")
+	}
+	on Hello {
+		// occurrence : is the instance of the received event. Here, it is of type "Hello".
+		info("An agent said \"hello\" to me: " + occurrence)
+		killMe
+	}
+	on Hello1 {
+		// occurrence : is the instance of the received event. Here, it is of type "Hello".
+		info("An agent said \"hello\" to me: " + occurrence.data)
+		killMe
+	}
+}
+
+agent Agent3 {
+	uses Logging, Lifecycle
+	on Initialize {
+		loggingName = "Agent-3"
+		info("I'm starting")
+	}
+	on Hello {
+		// occurrence : is the instance of the received event. Here, it is of type "Hello".
+		info("An agent said \"hello\" to me: " + occurrence)
+		killMe
+	}
+}
+
+
+
+
+
+
+agent Agent1_version2 {
+	uses Logging, Lifecycle, DefaultContextInteractions, Schedules
+
+	on Initialize {
+		loggingName = "Agent-1"
+		info("I'm starting")
+
+		typeof(Agent2).spawn
+		typeof(Agent3).spawn
+		
+		in(2.seconds, [
+			emit(new Hello)
+			killMe
+		])
+
+		// Problem: the specification of a hard-coded delay may cause issues related to async running
+		// and execution's duration.
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+agent Agent1_version3 {
+	uses Logging, Lifecycle, DefaultContextInteractions
+
+	on Initialize {
+		loggingName = "Agent-1"
+		info("I'm starting")
+		typeof(Agent2).spawn
+		typeof(Agent3).spawn
+	}
+
+	on AgentSpawned {
+		emit(new Hello)
+		killMe
+	}
+
+}
+
+
+
+
+
+
+agent Agent1_version4 {
+	uses Logging, Lifecycle, DefaultContextInteractions
+
+	var spawnedReceived = new AtomicInteger(0)
+
+	on Initialize {
+		loggingName = "Agent-1"
+		info("I'm starting")
+		typeof(Agent2).spawn
+		typeof(Agent3).spawn
+	}
+
+	on AgentSpawned {
+		var v = spawnedReceived.incrementAndGet
+		if (v == 2) {
+			emit(new Hello)
+			killMe
+		}
+	}
+
+}
+
