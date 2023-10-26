@@ -27,7 +27,7 @@ package fr.utbm.info.ia51.framework.environment
  * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
  * @version $Name$ $Revision$ $Date$
  */
-public class KillInfluence extends Influence {
+class KillInfluence extends Influence {
 
 	/**
 	 * @param agent the identifier of the agent to kill.

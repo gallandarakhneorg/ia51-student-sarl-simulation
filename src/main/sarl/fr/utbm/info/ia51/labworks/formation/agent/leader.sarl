@@ -22,6 +22,7 @@ package fr.utbm.info.ia51.labworks.formation.^agent
 
 import fr.utbm.info.ia51.framework.^agent.AbstractAnimat
 import fr.utbm.info.ia51.framework.environment.DynamicType
+import fr.utbm.info.ia51.framework.environment.Percept
 import fr.utbm.info.ia51.framework.environment.PerceptionEvent
 import fr.utbm.info.ia51.framework.math.MathUtil
 import fr.utbm.info.ia51.general.formation.FormationPattern
@@ -31,8 +32,7 @@ import fr.utbm.info.ia51.general.motionalgo.SeekAlgorithm
 import fr.utbm.info.ia51.general.motionalgo.SteeringSeekAlgorithm
 import fr.utbm.info.ia51.general.motionalgo.SteeringWanderAlgorithm
 import fr.utbm.info.ia51.general.motionalgo.WanderAlgorithm
-import io.sarl.core.Initialize
-import fr.utbm.info.ia51.framework.environment.Percept
+import io.sarl.api.core.Initialize
 
 agent Leader extends AbstractAnimat {
 

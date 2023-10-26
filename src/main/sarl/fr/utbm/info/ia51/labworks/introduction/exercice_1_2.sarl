@@ -1,9 +1,8 @@
 package fr.utbm.info.ia51.labworks.introduction
 
-import io.sarl.core.Initialize
-import io.sarl.core.Logging
-import io.sarl.core.Lifecycle
-import io.sarl.core.Destroy
+import io.sarl.api.core.Initialize
+import io.sarl.api.core.Lifecycle
+import io.sarl.api.core.Logging
 
 /** Hello World.
  * Version 1: Using system console

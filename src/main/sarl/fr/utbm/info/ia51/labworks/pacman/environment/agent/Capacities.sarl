@@ -29,8 +29,8 @@ import fr.utbm.info.ia51.labworks.pacman.environment.maze.PacmanBody
 import fr.utbm.info.ia51.labworks.pacman.environment.maze.PacmanObject
 import fr.utbm.info.ia51.labworks.pacman.environment.maze.PillObject
 import fr.utbm.info.ia51.labworks.pacman.environment.maze.SuperPowerAccessor
-import io.sarl.core.Behaviors
-import io.sarl.core.DefaultContextInteractions
+import io.sarl.api.core.Behaviors
+import io.sarl.api.core.DefaultContextInteractions
 import java.util.BitSet
 import java.util.List
 import java.util.Map

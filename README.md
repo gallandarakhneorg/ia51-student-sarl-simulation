@@ -11,17 +11,15 @@ License: Apache License 2
 
 ## Content of this repository
  
-* `src/main/java/fr/utbm/info/ia51/framework` contains a very simple simulation framework (following the guidelines given during the seminar sessions) based on the [SARL agent-oriented language](http://www.sarl.io) and the [Janus platform](http://www.janusproject.io).
+* `src/main/java/fr/utbm/info/ia51/framework` contains a very simple simulation framework (following the guidelines given during the seminar sessions) based on the [SARL agent-oriented language](http://www.sarl.io).
 * `src/main/java/fr/utbm/info/ia51/general` contains the different general libraries that are coded by the students during the lab works.
 * `src/main/java/fr/utbm/info/ia51/labworkX` contains the complete source code for a specific lab work.
 
 ## Installation
 
-* Download the [SARL Eclipse product 0.5.0](http://www.sarl.io/download/) (or higher) for the SARL agent programming language.
+* Download the [SARL Eclipse product 0.13.0](http://www.sarl.io/download/) (or higher) for the SARL agent programming language.
 * Launch the SARL Eclipse product.
 * Create a SARL project.
-* In the buildpath of the project: remove the "SARL libraries".
-* In the buildpath of the project: add the "Janus Libraries".
 * Copy the source code from this repository in the project.
 
 ## Launching

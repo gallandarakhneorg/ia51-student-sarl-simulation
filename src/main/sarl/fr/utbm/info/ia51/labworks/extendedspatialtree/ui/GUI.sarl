@@ -61,7 +61,7 @@ class GUI extends AbstractFrameworkGUI {
 	static var ICON_WIDTH : int
 	static var ICON_HEIGHT : int
 	
-	static val FAKE = {
+	static new {
 		var url = Resources::getResource(typeof(GUI), "rabbit.png") // $NON-NLS-1$
 		assert url !== null
 		STANDARD_RABBIT_ICON = new ImageIcon(url)

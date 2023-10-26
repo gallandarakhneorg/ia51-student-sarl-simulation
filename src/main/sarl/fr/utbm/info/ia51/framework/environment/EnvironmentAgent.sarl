@@ -21,15 +21,15 @@
 package fr.utbm.info.ia51.framework.environment
 
 import fr.utbm.info.ia51.framework.time.TimePercept
-import io.sarl.core.Behaviors
-import io.sarl.core.DefaultContextInteractions
-import io.sarl.core.Initialize
-import io.sarl.core.Lifecycle
+import io.sarl.api.core.Behaviors
+import io.sarl.api.core.DefaultContextInteractions
+import io.sarl.api.core.Initialize
+import io.sarl.api.core.Lifecycle
+import io.sarl.api.core.OpenEventSpace
 import io.sarl.lang.core.Address
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
-import io.sarl.core.OpenEventSpace
 
 /** This agent is managing the physic space. 
  *
@@ -51,7 +51,7 @@ agent EnvironmentAgent {
 		this.environment = (occurrence.parameters.get(0) as Environment);
 		var spaceId = (occurrence.parameters.get(1) as UUID);
 		this.^space = defaultContext.getSpace(spaceId)
-		this.^space.register(asEventListener)
+		this.^space.registerStrongParticipant(asEventListener)
 		this.myAdr = this.^space.getAddress(ID)
 		emit(new SimulationAgentReady)
 	}
@@ -60,7 +60,7 @@ agent EnvironmentAgent {
 		for(influence : occurrence.influences) {
 			var id = influence.emitter
 			if (id === null) {
-				id = occurrence.source.UUID
+				id = occurrence.source.ID
 			}
 			var body = this.environment.getAgentBodyFor(id)
 			body.influence(influence)
@@ -105,7 +105,7 @@ agent EnvironmentAgent {
 				body.perceivedObjects,
 				new Percept(body),
 				timePercept)
-			this.^space.emit(this.myAdr.UUID, ^event) [it.UUID == body.ID]
+			this.^space.emit(this.myAdr.ID, ^event) [it.ID == body.ID]
 		}
 		if (!run) {
 			killMe

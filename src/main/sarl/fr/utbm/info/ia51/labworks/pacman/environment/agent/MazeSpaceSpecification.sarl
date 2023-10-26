@@ -20,11 +20,11 @@
  */
 package fr.utbm.info.ia51.labworks.pacman.environment.^agent
 
+import io.sarl.api.core.OpenEventSpace
 import io.sarl.lang.core.EventListener
 import io.sarl.lang.core.Space
 import io.sarl.lang.core.SpaceID
 import io.sarl.lang.core.SpaceSpecification
-import io.sarl.core.OpenEventSpace
 
 /** Space that is representing the Jaak environment.
  *

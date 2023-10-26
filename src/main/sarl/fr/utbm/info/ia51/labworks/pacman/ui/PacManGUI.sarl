@@ -39,6 +39,7 @@ import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.^event.KeyEvent
 import java.awt.^event.KeyListener
+import java.awt.geom.Path2D
 import java.util.Map
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
@@ -50,9 +51,6 @@ import javax.swing.JFrame
 import javax.swing.JOptionPane
 import javax.swing.JPanel
 import javax.swing.JScrollPane
-
-import static java.lang.Math.*
-import java.awt.geom.Path2D
 
 /**
  * Swing UI for the PacMan game. 

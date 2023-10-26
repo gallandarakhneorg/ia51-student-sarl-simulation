@@ -62,7 +62,7 @@ class GUI extends AbstractFrameworkGUI {
 	static var ICON_WIDTH : int
 	static var ICON_HEIGHT : int
 	
-	static val FAKE = {
+	static new {
 		var url = Resources::getResource(typeof(GUI), "leader.png") // $NON-NLS-1$
 		assert url !== null
 		LEADER_ICON = new ImageIcon(url)
@@ -74,7 +74,6 @@ class GUI extends AbstractFrameworkGUI {
 		CARROT_ICON = new ImageIcon(url)
 		ICON_WIDTH = LEADER_ICON.iconWidth
 		ICON_HEIGHT = LEADER_ICON.iconHeight
-		null
 	}
 	
 	var showIcons : JCheckBox

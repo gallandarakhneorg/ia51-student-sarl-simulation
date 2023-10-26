@@ -26,12 +26,12 @@ import fr.utbm.info.ia51.framework.environment.InfluenceEvent
 import fr.utbm.info.ia51.framework.environment.KillInfluence
 import fr.utbm.info.ia51.framework.environment.MotionInfluence
 import fr.utbm.info.ia51.framework.math.Vector2f
-import io.sarl.core.Behaviors
-import io.sarl.core.DefaultContextInteractions
+import io.sarl.api.core.Behaviors
+import io.sarl.api.core.DefaultContextInteractions
+import io.sarl.api.core.OpenEventSpace
 import io.sarl.lang.core.Address
 import java.lang.reflect.Array
 import java.util.UUID
-import io.sarl.core.OpenEventSpace
 
 skill StandardPhysicEnvironment implements PhysicEnvironment {
 
@@ -52,7 +52,7 @@ skill StandardPhysicEnvironment implements PhysicEnvironment {
 			this.physicSpace = defaultContext.getSpace(this.spaceID)
 			Thread::yield
 		} while (this.physicSpace === null)
-		this.physicSpace.register(asEventListener)
+		this.physicSpace.registerStrongParticipant(asEventListener)
 		this.myAdr = this.physicSpace.getAddress(owner.ID)
 	}
 	

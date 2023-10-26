@@ -34,7 +34,7 @@ import fr.utbm.info.ia51.general.motionalgo.SteeringFleeAlgorithm
 import fr.utbm.info.ia51.general.motionalgo.SteeringSeekAlgorithm
 import fr.utbm.info.ia51.general.motionalgo.SteeringWanderAlgorithm
 import fr.utbm.info.ia51.general.motionalgo.WanderAlgorithm
-import io.sarl.core.Initialize
+import io.sarl.api.core.Initialize
 
 agent Rabbit extends AbstractAnimat {
 	

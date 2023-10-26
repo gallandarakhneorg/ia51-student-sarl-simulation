@@ -26,12 +26,12 @@ import fr.utbm.info.ia51.framework.environment.EnvironmentAgent
 import fr.utbm.info.ia51.framework.environment.SimulationAgentReady
 import fr.utbm.info.ia51.framework.environment.StartSimulation
 import fr.utbm.info.ia51.framework.util.SpawnMapping
-import io.sarl.core.DefaultContextInteractions
-import io.sarl.core.Initialize
-import io.sarl.core.Lifecycle
+import io.sarl.api.core.DefaultContextInteractions
+import io.sarl.api.core.Initialize
+import io.sarl.api.core.Lifecycle
+import io.sarl.api.core.OpenEventSpaceSpecification
 import java.util.List
 import java.util.UUID
-import io.sarl.core.OpenEventSpaceSpecification
 
 /** This agent is managing the simulator. 
  *

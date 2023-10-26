@@ -8,16 +8,16 @@
 	<version>0.0.1-SNAPSHOT</version>
 
 	<properties>
-		<sarl.version>0.11.0</sarl.version>
+		<sarl.version>0.13.0</sarl.version>
 		<janus.version>3.${sarl.version}</janus.version>
-		<target.jdk.version>1.8</target.jdk.version>
+		<target.jdk.version>17</target.jdk.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
 	<dependencies>
 		<dependency>
-			<groupId>io.sarl.maven</groupId>
-			<artifactId>io.sarl.maven.sdk</artifactId>
+			<groupId>io.sarl.sdk</groupId>
+			<artifactId>sdk</artifactId>
 			<version>${sarl.version}</version>
 		</dependency>
 		<!-- <dependency>
@@ -32,7 +32,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
+				<version>3.11.0</version>
 				<configuration>
 					<source>${target.jdk.version}</source>
 					<target>${target.jdk.version}</target>
@@ -40,13 +40,12 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>io.sarl.maven</groupId>
+				<groupId>io.sarl.lang</groupId>
 				<artifactId>sarl-maven-plugin</artifactId>
 				<version>${sarl.version}</version>
 				<extensions>true</extensions>
 				<configuration>
 					<source>${target.jdk.version}</source>
-					<target>${target.jdk.version}</target>
 					<encoding>${project.build.sourceEncoding}</encoding>
 				</configuration>
 			</plugin>

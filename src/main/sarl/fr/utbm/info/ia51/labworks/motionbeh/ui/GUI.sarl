@@ -43,7 +43,7 @@ import javax.swing.JSlider
  * @author St&eacute;phane GALLAND &lt;stephane.galland@utbm.fr&gt;
  * @version $Name$ $Revision$ $Date$
  */
-public class GUI extends AbstractFrameworkGUI {
+class GUI extends AbstractFrameworkGUI {
 
 	/** Size of the direction vector (in pixels).
 	 */
@@ -54,7 +54,7 @@ public class GUI extends AbstractFrameworkGUI {
 	static var ICON_WIDTH : int 
 	static var ICON_HEIGHT : int 
 	
-	static val FAKE = {
+	static new {
 		var url = Resources.getResource(typeof(GUI), "rabbit.png") // $NON-NLS-1$
 		assert url !== null
 		RABBIT_ICON = new ImageIcon(url)
@@ -63,7 +63,6 @@ public class GUI extends AbstractFrameworkGUI {
 		CARROT_ICON = new ImageIcon(url)
 		ICON_WIDTH = RABBIT_ICON.iconWidth
 		ICON_HEIGHT = RABBIT_ICON.iconHeight
-		null
 	}
 	
 	var showIcons : JCheckBox 

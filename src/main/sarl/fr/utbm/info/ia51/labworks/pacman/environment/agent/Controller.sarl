@@ -48,8 +48,8 @@ final class Controller {
 	def startSimulation : void {
 		if (!this.started.getAndSet(true)) {
 			var ^event = new RunBeginingOfStep
-			this.^space.emit(this.address.UUID,
-				^event) [it.UUID == this.address.UUID]
+			this.^space.emit(this.address.ID,
+				^event) [it.ID == this.address.ID]
 		}
 	}
 	

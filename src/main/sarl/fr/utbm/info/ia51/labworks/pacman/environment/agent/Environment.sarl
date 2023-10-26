@@ -23,10 +23,10 @@ package fr.utbm.info.ia51.labworks.pacman.environment.^agent
 import fr.utbm.info.ia51.framework.math.Point2i
 import fr.utbm.info.ia51.labworks.pacman.environment.maze.PacmanObject
 import fr.utbm.info.ia51.labworks.pacman.players.Ghost
-import io.sarl.core.DefaultContextInteractions
-import io.sarl.core.Destroy
-import io.sarl.core.Initialize
-import io.sarl.core.Lifecycle
+import io.sarl.api.core.DefaultContextInteractions
+import io.sarl.api.core.Destroy
+import io.sarl.api.core.Initialize
+import io.sarl.api.core.Lifecycle
 import java.util.Collections
 import java.util.TreeMap
 import java.util.logging.Logger

@@ -24,9 +24,9 @@ import fr.utbm.info.ia51.framework.^agent.AbstractAnimat
 import fr.utbm.info.ia51.framework.environment.DynamicType
 import fr.utbm.info.ia51.framework.environment.PerceptionEvent
 import fr.utbm.info.ia51.framework.math.MathUtil
+import fr.utbm.info.ia51.general.formation.FormationAnchor
 import fr.utbm.info.ia51.general.formation.FormationAssignment
 import fr.utbm.info.ia51.general.formation.FormationPattern
-import fr.utbm.info.ia51.general.formation.FormationAnchor
 import fr.utbm.info.ia51.general.motionalgo.AlignAlgorithm
 import fr.utbm.info.ia51.general.motionalgo.KinematicAlignAlgorithm
 import fr.utbm.info.ia51.general.motionalgo.KinematicSeekAlgorithm
@@ -36,7 +36,7 @@ import fr.utbm.info.ia51.general.motionalgo.SteeringAlignAlgorithm
 import fr.utbm.info.ia51.general.motionalgo.SteeringSeekAlgorithm
 import fr.utbm.info.ia51.general.motionalgo.SteeringWanderAlgorithm
 import fr.utbm.info.ia51.general.motionalgo.WanderAlgorithm
-import io.sarl.core.Initialize
+import io.sarl.api.core.Initialize
 
 agent Follower extends AbstractAnimat {
 	

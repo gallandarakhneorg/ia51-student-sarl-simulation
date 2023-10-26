@@ -21,17 +21,16 @@
 
 package fr.utbm.info.ia51.labworks.pacman.players
 
-import io.sarl.core.Destroy
-import io.sarl.core.Initialize
-import io.sarl.core.Lifecycle
-import java.util.List
-import java.util.Random
-import fr.utbm.info.ia51.labworks.pacman.environment.maze.Direction
+import fr.utbm.info.ia51.labworks.pacman.environment.^agent.DefaultMazeMotionSkill
+import fr.utbm.info.ia51.labworks.pacman.environment.^agent.MazeMotion
 import fr.utbm.info.ia51.labworks.pacman.environment.^agent.PacManIsDead
 import fr.utbm.info.ia51.labworks.pacman.environment.^agent.Perception
+import fr.utbm.info.ia51.labworks.pacman.environment.maze.Direction
 import fr.utbm.info.ia51.labworks.pacman.environment.maze.PacmanBody
-import fr.utbm.info.ia51.labworks.pacman.environment.^agent.MazeMotion
-import fr.utbm.info.ia51.labworks.pacman.environment.^agent.DefaultMazeMotionSkill
+import io.sarl.api.core.Initialize
+import io.sarl.api.core.Lifecycle
+import java.util.List
+import java.util.Random
 
 /** Ghost.
  * 
